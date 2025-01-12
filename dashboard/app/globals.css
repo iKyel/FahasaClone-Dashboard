@@ -88,3 +88,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+*:focus {
+  outline: none;
+  border: none;
+  border-style: none;
+}

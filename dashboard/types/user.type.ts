@@ -1,13 +1,14 @@
 export interface UserDTO {
+  _id: string;
   hoDem: string;
   ten: string;
   userName: string;
   password: string;
-  diaChi: string;
-  email: string;
-  gioiTinh: string;
-  ngaySinh: string;
+  email?: string;
+  diaChi: string[];
+  gioiTinh?: string;
+  ngaySinh?: string;
   loaiTK: string;
-  sdt: string;
   trangThai: boolean;
+  sdt?: string;
 }

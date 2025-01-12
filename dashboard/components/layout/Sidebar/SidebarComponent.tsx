@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useContext } from "react";
 import { items } from "./SidebarItems";
 
 import {
@@ -12,13 +12,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import SearchContext from "@/contexts/SearchContext";
+import { AppContext } from "@/contexts/AppContext";
+import Link from "next/link";
 
 export default function SidebarComponent() {
-  const [activeItem, setActiveItem] = useState<string | null>(null);
+  const { activeItem, setActiveItem } = useContext(AppContext);
+  const { setSearchType } = useContext(SearchContext);
   return (
     <Sidebar className="w-64">
-      {" "}
-      {/* Chiếm chiều rộng cố định 16rem (w-64) */}
       <SidebarContent>
         <SidebarGroup>
           <Image
@@ -28,14 +30,18 @@ export default function SidebarComponent() {
             height={72}
             className="mb-7"
           />
+
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title} className="mb-3">
                   <SidebarMenuButton asChild>
-                    <a
+                    <Link
                       href={item.url}
-                      onClick={() => setActiveItem(item.title)}
+                      onClick={() => {
+                        setActiveItem(item.title);
+                        setSearchType(item.title);
+                      }}
                       className={`flex items-center space-x-2 p-3 rounded-md transition-colors duration-200 ${
                         activeItem === item.title
                           ? "bg-orange-400 text-white"
@@ -44,7 +50,7 @@ export default function SidebarComponent() {
                     >
                       <item.icon className="text-xl" />
                       <span className="text-lg">{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

@@ -9,19 +9,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TbWorld } from "react-icons/tb";
-import { LanguageContext } from "@/contexts/useLanguage";
+import { AppContext } from "@/contexts/AppContext";
 import { FaCheck } from "react-icons/fa";
 
 const LanguageMenu = () => {
-  const { language, setLanguage } = useContext(LanguageContext);
+  const { language, setLanguage } = useContext(AppContext);
   const languages: string[] = ["English", "Vietnamese"];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <button>
-          <TbWorld className="h-6 w-6 text-gray-700 hover:text-orange-400" />
-        </button>
+        <TbWorld className="h-6 w-6 text-gray-700 hover:text-orange-400" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>Language</DropdownMenuLabel>
