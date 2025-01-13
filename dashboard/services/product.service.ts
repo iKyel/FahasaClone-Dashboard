@@ -16,7 +16,25 @@ export class ProductService {
     return new ProductService();
   }
 
-  public async createProduct(values: ProductDTO) {
+  public async createProduct(values: {
+    tenSP: string;
+    giaBan: number;
+    giaNhap: number;
+    soLuong: number;
+    trongLuong: number;
+    kichThuoc: {
+      dai: number;
+      rong: number;
+      cao: number;
+    };
+    moTa?: string | null;
+    imageUrl: File | string | null;
+    features: Array<{
+      _id: string;
+      tenDT: string;
+      giaTri: string;
+    }>;
+  }): Promise<ApiResponse<{ message: string }>> {
     return await this.apiUtils.post(
       `${API_ROUTES.product}/createProduct`,
       values

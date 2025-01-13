@@ -25,6 +25,18 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRouter } from "next/navigation";
 import SearchContext from "@/contexts/SearchContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "react-toastify";
 
 const Customer = () => {
   const userService = useMemo(() => UserService.getInstance(), []);
@@ -59,6 +71,28 @@ const Customer = () => {
     fetchCustomers();
   }, [userService, search, searchType]);
 
+  const handleLock = async (id: string) => {
+    try {
+      const response = await userService.lock(id);
+      if (response.success) {
+        setCustomers((prev) =>
+          prev.map((customer) =>
+            customer._id === id ? { ...customer, trangThai: false } : customer
+          )
+        );
+        toast.success(response.data?.message || "Employee locked successfully");
+        window.location.reload();
+      } else {
+        console.error(response.error?.message || "Failed to lock employee");
+      }
+    } catch (error) {
+      console.error(
+        "An unexpected error occurred while locking employee:",
+        error
+      );
+    }
+  };
+
   return (
     <>
       <div className="flex flex-row-reverse space-between pb-3 shadow-md">
@@ -79,7 +113,7 @@ const Customer = () => {
             <TableHead>User Name</TableHead>
             <TableHead>Address</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Sex</TableHead>
+            <TableHead>Gender</TableHead>
             <TableHead>Date of Birth</TableHead>
             <TableHead>Phone Number</TableHead>
             <TableHead>Status</TableHead>
@@ -105,9 +139,15 @@ const Customer = () => {
               <TableCell>{customer.ngaySinh}</TableCell>
               <TableCell>{customer.sdt}</TableCell>
               <TableCell>
-                <Button className="bg-green-500 text-white hover:bg-green-500 hover:text-white font-bold px-5 rounded-full">
-                  Active
-                </Button>
+                {customer.trangThai === true ? (
+                  <Button className="bg-green-500 text-white hover:bg-green-500 hover:text-white font-bold px-5 rounded-full">
+                    Active
+                  </Button>
+                ) : (
+                  <Button className="bg-red-500 text-white hover:bg-red-500 hover:text-white font-bold px-5 rounded-full">
+                    Locked
+                  </Button>
+                )}
               </TableCell>
               <TableCell>
                 <DropdownMenu>
@@ -125,7 +165,35 @@ const Customer = () => {
                       >
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Lock</DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                          >
+                            {customer.trangThai ? `Lock` : `Unlock`}
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Are you absolutely sure?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will
+                              permanently delete your account and remove your
+                              data from our servers.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleLock(customer._id)}
+                            >
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>

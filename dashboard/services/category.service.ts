@@ -18,7 +18,7 @@ export class CategoryService {
 
   public async getCategories(): Promise<
     ApiResponse<{
-      danhMucs: Array<{ _id: string; ten: string; parentId: string }>;
+      categories: Array<{ _id: string; ten: string; parentId: string }>;
     }>
   > {
     return await this.apiUtils.get(`${API_ROUTES.category}/getCategories`);
@@ -42,7 +42,24 @@ export class CategoryService {
         ten: string;
       };
     }>
-    > {
-    return await this.apiUtils.get(`${API_ROUTES.category}/getCategoryName/${id}`);
+  > {
+    return await this.apiUtils.get(
+      `${API_ROUTES.category}/getCategoryName/${id}`
+    );
+  }
+
+  public async getFeaturesByCategory(id: string): Promise<
+    ApiResponse<{
+      features: {
+        _id: string;
+        ten: string;
+        dsGiaTri: string[];
+        tenTruyVan: string;
+      }[];
+    }>
+  > {
+    return this.apiUtils.get(
+      `${API_ROUTES.category}/getFeaturesByCategory/${id}`
+    );
   }
 }
