@@ -58,9 +58,47 @@ export class ProductService {
     return await this.apiUtils.get(`${API_ROUTES.product}/getProducts`, values);
   }
 
-  public async getProductDetail(
-    id: string
-  ): Promise<ApiResponse<{ message: string; productDetail: ProductDTO }>> {
+  public async searchProducts(values: {
+    searchName: string;
+    pageNum: number;
+  }): Promise<
+    ApiResponse<{
+      message: string;
+      products: ProductDTO[];
+      totalPage: number;
+    }>
+  > {
+    return this.apiUtils.get(`${API_ROUTES.product}/searchProduct`, values);
+  }
+
+  public async getProductDetail(id: string): Promise<
+    ApiResponse<{
+      message: string;
+      productDetail: {
+        _id: string;
+        tenSP: string;
+        giaBan: number;
+        giaNhap: number;
+        soLuong: number;
+        moTa?: string;
+        trongLuong: number;
+        danhMucId: string;
+        kichThuoc: {
+          dai: number;
+          rong: number;
+          cao: number;
+        };
+        khuyenMai?: number;
+        imageUrl: File | string | null;
+        features: Array<{
+          _id: string;
+          dacTrungId: string;
+          tenDT: string;
+          giaTri: string;
+        }>;
+      };
+    }>
+  > {
     return await this.apiUtils.get(
       `${API_ROUTES.product}/getProductDetail/${id}`
     );

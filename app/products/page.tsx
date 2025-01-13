@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -14,6 +14,7 @@ import ProductItem from "@/components/ui/ProductItem/ProductItem";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ProductService } from "@/services/product.service";
+import SearchContext from "@/contexts/SearchContext";
 
 const Product = () => {
   const productService: ProductService = useMemo(
@@ -21,13 +22,23 @@ const Product = () => {
     []
   );
 
+  const { search } = useContext(SearchContext);
+
   // alert(productService);
   const [products, setProducts] = React.useState<ProductDTO[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await productService.getProducts();
+        let response;
+        if (search === "") response = await productService.getProducts();
+        else
+          response = await productService.searchProducts({
+            searchName: search,
+            pageNum: 1,
+          });
+
+        console.log(response);
         if (response.success) {
           setProducts(
             response.data?.products.map((product) => ({
@@ -41,7 +52,8 @@ const Product = () => {
             })) || []
           );
         } else {
-          console.error(response.error?.message || "Failed to fetch products");
+          console.log(response.error?.message || "Failed to fetch products");
+          setProducts([]);
         }
       } catch (error) {
         console.error(
@@ -52,7 +64,7 @@ const Product = () => {
     };
 
     fetchProducts();
-  }, [productService]);
+  }, [productService, search]);
 
   return (
     <>

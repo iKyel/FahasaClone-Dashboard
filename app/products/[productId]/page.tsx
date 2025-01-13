@@ -21,7 +21,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { CategoryService } from "@/services/category.service";
 import { ProductService } from "@/services/product.service";
-import { ProductDTO } from "@/types/product.type";
 import app from "@/utils/firebase.config";
 import { productFormSchema } from "@/utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +43,29 @@ const ProductDetail = () => {
     []
   );
 
-  const [product, setProduct] = useState<ProductDTO>();
+  const [product, setProduct] = useState<{
+    _id: string;
+    tenSP: string;
+    giaBan: number;
+    giaNhap: number;
+    soLuong: number;
+    moTa?: string;
+    trongLuong: number;
+    danhMucId: string;
+    khuyenMai?: number;
+    kichThuoc: {
+      dai: number;
+      rong: number;
+      cao: number;
+    };
+    imageUrl: File | string | null;
+    features: Array<{
+      _id: string;
+      dacTrungId: string;
+      tenDT: string;
+      giaTri: string;
+    }>;
+  }>();
   const [categoryName, setCategoryName] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -68,7 +89,12 @@ const ProductDetail = () => {
       imageUrl: product?.imageUrl ?? null,
       moTa: product?.moTa ?? "",
       danhMucId: product?.danhMucId ?? "",
-      features: product?.features ?? [],
+      features:
+        product?.features.map((feature) => ({
+          _id: feature.dacTrungId,
+          tenDT: feature.tenDT,
+          giaTri: feature.giaTri,
+        })) ?? [],
     },
   });
 
@@ -94,7 +120,14 @@ const ProductDetail = () => {
           setValue("imageUrl", productDetail.imageUrl ?? null);
           setValue("moTa", productDetail.moTa ?? "");
           setValue("danhMucId", productDetail.danhMucId ?? "");
-          setValue("features", productDetail.features ?? []);
+          setValue(
+            "features",
+            productDetail.features.map((feature) => ({
+              _id: feature.dacTrungId,
+              tenDT: feature.tenDT,
+              giaTri: feature.giaTri,
+            })) ?? []
+          );
         } else {
           console.error(
             response.error?.message || "Failed to fetch product detail"
@@ -138,27 +171,27 @@ const ProductDetail = () => {
         values.moTa = "";
       }
 
-      // if (values.imageUrl && values.imageUrl instanceof File) {
-      //   // Lấy file ảnh từ form
-      //   const imageFile = values.imageUrl;
+      if (values.imageUrl && values.imageUrl instanceof File) {
+        // Lấy file ảnh từ form
+        const imageFile = values.imageUrl;
 
-      //   const storage = getStorage(app);
-      //   // Tạo ref cho file ảnh trong Firebase Storage
-      //   const imageRef = ref(storage, `images/${imageFile.name}`);
+        const storage = getStorage(app);
+        // Tạo ref cho file ảnh trong Firebase Storage
+        const imageRef = ref(storage, `images/${imageFile.name}`);
 
-      //   // Tải ảnh lên Firebase Storage
-      //   const uploadResult = await uploadBytes(imageRef, imageFile);
+        // Tải ảnh lên Firebase Storage
+        const uploadResult = await uploadBytes(imageRef, imageFile);
 
-      //   // Lấy URL của ảnh đã tải lên
-      //   const downloadURL = await getDownloadURL(uploadResult.ref);
+        // Lấy URL của ảnh đã tải lên
+        const downloadURL = await getDownloadURL(uploadResult.ref);
 
-      //   // Cập nhật dữ liệu với URL của ảnh
-      //   values.imageUrl = downloadURL;
-      // }
+        // Cập nhật dữ liệu với URL của ảnh
+        values.imageUrl = downloadURL;
+      }
 
-      // const response = await productService.updateProduct(productId, values);
-      // toast.success(response.data?.message);
-      // router.push("/products");
+      const response = await productService.updateProduct(productId, values);
+      toast.success(response.data?.message);
+      router.push("/products");
     } catch (error) {
       alert(error);
       console.error("Error during adding new product:", error);
@@ -437,46 +470,49 @@ const ProductDetail = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {product?.features.map((feature, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{feature.tenDT}</TableCell>
-                    <TableCell>
-                      <div key={feature._id}>
-                        <input
-                          type="hidden"
-                          {...form.register(`features.${index}._id`)}
-                          value={feature._id}
-                        />
+                {product &&
+                  product.features.map((feature, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{feature.tenDT}</TableCell>
+                      <TableCell>
+                        <div key={feature._id}>
+                          <input
+                            type="hidden"
+                            {...form.register(`features.${index}.dacTrungId`)}
+                            value={feature.dacTrungId} // Gán dacTrungId vào _id
+                          />
 
-                        <input
-                          type="hidden"
-                          {...form.register(`features.${index}.tenDT`)} // Đảm bảo tenDT được đăng ký
-                          value={feature.tenDT} // Gán giá trị ten vào tenDT
-                        />
+                          {/* Đảm bảo tenDT được đăng ký */}
+                          <input
+                            type="hidden"
+                            {...form.register(`features.${index}.tenDT`)}
+                            value={feature.tenDT}
+                          />
 
-                        <FormField
-                          control={form.control}
-                          name={`features.${index}.giaTri`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{feature.tenDT}</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder={`Enter value for ${feature.tenDT}`}
-                                  value={field.value ?? ""}
-                                  onChange={(e) =>
-                                    field.onChange(e.target.value)
-                                  } // Update `giaTri`
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {/* FormField cho giá trị của giaTri */}
+                          <FormField
+                            control={form.control}
+                            name={`features.${index}.giaTri`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{feature.tenDT}</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder={`Enter value for ${feature.tenDT}`}
+                                    value={field.value ?? ""}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.value)
+                                    } // Update `giaTri`
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </div>

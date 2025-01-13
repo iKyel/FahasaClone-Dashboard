@@ -150,7 +150,7 @@ const AddProduct = () => {
   return (
     <>
       <div className="flex flex-row mb-5">
-        <Label className="text-2xl">Product Detail</Label>
+        <Label className="text-2xl">Add new Product</Label>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

@@ -6,13 +6,11 @@ import React, { useContext } from "react";
 
 export default function NavbarComponent() {
   const { search, setSearch } = useContext(SearchContext);
-  // const [localSearch, setLocalSearch] = React.useState("");
   return (
     <nav className="flex items-center justify-between p-4 bg-white shadow-md">
       <div className="flex items-center flex-grow">
         <button
-          className="bg-transparent text-gray-700 rounded-l-md p-2 hover:bg-orange-200 transition-colors"
-          // onClick={() => setSearch(localSearch)}\
+          className="bg-transparent text-gray-700 rounded-l-md p-2"
           disabled
         >
           <Search />
