@@ -48,7 +48,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "react-toastify";
-import IsAuth from "@/components/hoc/IsAuth";
+// import IsAuth from "@/components/hoc/IsAuth";
 
 const Staff = () => {
   const [employees, setEmployees] = useState<UserDTO[]>([]);
@@ -242,4 +242,4 @@ const Staff = () => {
   );
 };
 
-export default IsAuth(Staff);
+export default Staff;
