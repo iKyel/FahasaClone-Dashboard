@@ -93,4 +93,8 @@ export class UserService {
   }): Promise<ApiResponse<{ message: string }>> {
     return await this.apiUtils.put(`${API_ROUTES.user}/changePassword`, values);
   }
+
+  public async logout(): Promise<ApiResponse<{ message: string }>> {
+    return await this.apiUtils.get(`${API_ROUTES.user}/logout`);
+  }
 }

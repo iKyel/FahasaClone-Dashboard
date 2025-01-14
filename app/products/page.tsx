@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useEffect, useMemo } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -15,6 +15,15 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ProductService } from "@/services/product.service";
 import SearchContext from "@/contexts/SearchContext";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const Product = () => {
   const productService: ProductService = useMemo(
@@ -24,8 +33,9 @@ const Product = () => {
 
   const { search } = useContext(SearchContext);
 
-  // alert(productService);
-  const [products, setProducts] = React.useState<ProductDTO[]>([]);
+  const [products, setProducts] = useState<ProductDTO[]>([]);
+  const [pageNum, setPageNum] = useState<number>(1);
+  const [totalPage, setTotalPage] = useState<number>(1);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -35,10 +45,10 @@ const Product = () => {
         else
           response = await productService.searchProducts({
             searchName: search,
-            pageNum: 1,
+            pageNum: pageNum,
           });
 
-        console.log(response);
+        console.log(response.data);
         if (response.success) {
           setProducts(
             response.data?.products.map((product) => ({
@@ -51,6 +61,8 @@ const Product = () => {
                 new Date(product.updatedAt).toLocaleDateString(),
             })) || []
           );
+
+          if (response.data?.totalPage) setTotalPage(response.data?.totalPage);
         } else {
           console.log(response.error?.message || "Failed to fetch products");
           setProducts([]);
@@ -64,7 +76,7 @@ const Product = () => {
     };
 
     fetchProducts();
-  }, [productService, search]);
+  }, [productService, search, pageNum]);
 
   return (
     <>
@@ -96,6 +108,55 @@ const Product = () => {
           ))}
         </TableBody>
       </Table>
+      <div className="bottom-1 flex justify-center items-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  setPageNum((num) => num - 1);
+                  alert(pageNum);
+                }}
+                tabIndex={pageNum <= 1 ? -1 : undefined}
+                aria-disabled={pageNum === 1}
+                className={
+                  pageNum <= 1 ? "pointer-events-none opacity-50" : undefined
+                }
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPage }, (_, index) => index + 1).map(
+              (page) => (
+                <PaginationItem
+                  key={page}
+                  className={page === pageNum ? `bg-yellow` : ``}
+                >
+                  <PaginationLink onClick={() => setPageNum(page)}>
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                tabIndex={pageNum >= totalPage ? -1 : undefined}
+                aria-disabled={pageNum === totalPage}
+                className={
+                  pageNum >= totalPage
+                    ? "pointer-events-none opacity-50"
+                    : undefined
+                }
+                onClick={() => {
+                  setPageNum((num) => num + 1);
+                  alert(pageNum);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </>
   );
 };

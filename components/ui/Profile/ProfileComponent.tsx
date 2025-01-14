@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,9 +7,12 @@ import {
 import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { UserService } from "@/services/user.service";
+import { toast } from "react-toastify";
 
 const ProfileComponent = () => {
   const router = useRouter();
+  const userService: UserService = useMemo(() => UserService.getInstance(), []);
   return (
     <>
       <DropdownMenu>
@@ -41,7 +44,12 @@ const ProfileComponent = () => {
           </DropdownMenuItem>
           <DropdownMenuItem
             className="p-2 cursor-pointer hover:bg-orange-300 border-none hover:border-none"
-            onClick={() => {}}
+            onClick={async () => {
+              const response = await userService.logout();
+              if (response.success && response.data)
+                toast.success(response.data?.message);
+              router.push("/login");
+            }}
           >
             Logout
           </DropdownMenuItem>

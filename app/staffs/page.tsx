@@ -17,6 +17,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+// import {
+//   Pagination,
+//   PaginationContent,
+//   PaginationEllipsis,
+//   PaginationItem,
+//   PaginationLink,
+//   PaginationNext,
+//   PaginationPrevious,
+// } from "@/components/ui/pagination";
+
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { UserService } from "@/services/user.service";
@@ -38,6 +48,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "react-toastify";
+import IsAuth from "@/components/hoc/IsAuth";
 
 const Staff = () => {
   const [employees, setEmployees] = useState<UserDTO[]>([]);
@@ -209,8 +220,26 @@ const Staff = () => {
           ))}
         </TableBody>
       </Table>
+      {/* <div className="bottom-1 flex justify-center items-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">1</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext href="#" />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div> */}
     </>
   );
 };
 
-export default Staff;
+export default IsAuth(Staff);

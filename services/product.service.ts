@@ -90,13 +90,13 @@ export class ProductService {
         };
         khuyenMai?: number;
         imageUrl: File | string | null;
-        features: Array<{
-          _id: string;
-          dacTrungId: string;
-          tenDT: string;
-          giaTri: string;
-        }>;
       };
+      features: Array<{
+        _id: string;
+        dacTrungId: string;
+        ten: string;
+        giaTri: string;
+      }>;
     }>
   > {
     return await this.apiUtils.get(

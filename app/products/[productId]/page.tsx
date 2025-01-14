@@ -59,13 +59,16 @@ const ProductDetail = () => {
       cao: number;
     };
     imageUrl: File | string | null;
-    features: Array<{
+  }>();
+
+  const [features, setFeatures] = useState<
+    Array<{
       _id: string;
       dacTrungId: string;
-      tenDT: string;
+      ten: string;
       giaTri: string;
-    }>;
-  }>();
+    }>
+  >([]);
   const [categoryName, setCategoryName] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -90,9 +93,9 @@ const ProductDetail = () => {
       moTa: product?.moTa ?? "",
       danhMucId: product?.danhMucId ?? "",
       features:
-        product?.features.map((feature) => ({
+        features.map((feature) => ({
           _id: feature.dacTrungId,
-          tenDT: feature.tenDT,
+          ten: feature.ten,
           giaTri: feature.giaTri,
         })) ?? [],
     },
@@ -107,6 +110,7 @@ const ProductDetail = () => {
         if (response.success && response.data) {
           const productDetail = response.data.productDetail;
           setProduct(response.data.productDetail);
+          setFeatures(response.data.features);
           setValue("tenSP", productDetail.tenSP ?? "");
           setValue("giaBan", productDetail.giaBan ?? 1);
           setValue("giaNhap", productDetail.giaNhap ?? 1);
@@ -120,11 +124,14 @@ const ProductDetail = () => {
           setValue("imageUrl", productDetail.imageUrl ?? null);
           setValue("moTa", productDetail.moTa ?? "");
           setValue("danhMucId", productDetail.danhMucId ?? "");
+
+          const featuresInProductDetail = response.data.features;
+          // console.log(featuresInProductDetail);
           setValue(
             "features",
-            productDetail.features.map((feature) => ({
+            featuresInProductDetail.map((feature) => ({
               _id: feature.dacTrungId,
-              tenDT: feature.tenDT,
+              tenDT: feature.ten,
               giaTri: feature.giaTri,
             })) ?? []
           );
@@ -470,15 +477,15 @@ const ProductDetail = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {product &&
-                  product.features.map((feature, index) => (
+                {features &&
+                  features?.map((feature, index) => (
                     <TableRow key={index}>
-                      <TableCell>{feature.tenDT}</TableCell>
+                      <TableCell>{feature.ten}</TableCell>
                       <TableCell>
                         <div key={feature._id}>
                           <input
                             type="hidden"
-                            {...form.register(`features.${index}.dacTrungId`)}
+                            {...form.register(`features.${index}._id`)}
                             value={feature.dacTrungId} // Gán dacTrungId vào _id
                           />
 
@@ -486,7 +493,7 @@ const ProductDetail = () => {
                           <input
                             type="hidden"
                             {...form.register(`features.${index}.tenDT`)}
-                            value={feature.tenDT}
+                            value={feature.ten}
                           />
 
                           {/* FormField cho giá trị của giaTri */}
@@ -495,10 +502,10 @@ const ProductDetail = () => {
                             name={`features.${index}.giaTri`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>{feature.tenDT}</FormLabel>
+                                <FormLabel>{feature.ten}</FormLabel>
                                 <FormControl>
                                   <Input
-                                    placeholder={`Enter value for ${feature.tenDT}`}
+                                    placeholder={`Enter value for ${feature.ten}`}
                                     value={field.value ?? ""}
                                     onChange={(e) =>
                                       field.onChange(e.target.value)
