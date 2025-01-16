@@ -54,7 +54,7 @@ export const productFormSchema = z.object({
   tenSP: z.string().min(3),
   giaBan: z.number().positive(),
   giaNhap: z.number().positive(),
-  soLuong: z.number().positive(),
+  soLuong: z.number(),
   trongLuong: z.number().positive(),
   kichThuoc: z.object({
     dai: z.number().positive(),
@@ -79,4 +79,11 @@ export const productFormSchema = z.object({
 export const categoryFormSchema = z.object({
   ten: z.string().min(3),
   parentId: z.union([z.string(), z.null()]),
+});
+
+// ===================================================
+// Supplier schemas:
+export const supplierFormSchema = z.object({
+  ten: z.string(),
+  danhMucId: z.string(),
 });

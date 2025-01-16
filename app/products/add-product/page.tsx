@@ -32,19 +32,21 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import app from "../../../utils/firebase.config";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { FeatureService } from "@/services/feature.service";
 
 const AddProduct = () => {
   const router = useRouter();
   const productService = useMemo(() => ProductService.getInstance(), []);
   const categoryService = useMemo(() => CategoryService.getInstance(), []);
+  const featureService = useMemo(() => FeatureService.getInstance(), []);
 
   const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [features, setFeatures] = useState<
     {
       _id: string;
       ten: string;
-      dsGiaTri: string[];
       tenTruyVan: string;
+      truongLoc: boolean;
     }[]
   >([]);
 
@@ -56,7 +58,7 @@ const AddProduct = () => {
       tenSP: "",
       giaBan: 1,
       giaNhap: 1,
-      soLuong: 1,
+      soLuong: 0,
       trongLuong: 1,
       kichThuoc: {
         dai: 1,
@@ -70,8 +72,6 @@ const AddProduct = () => {
       features: [],
     },
   });
-
-  const danhMucId = form.watch("danhMucId");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -87,9 +87,9 @@ const AddProduct = () => {
   }, [categoryService]);
 
   useEffect(() => {
-    const fetchFeaturesFromCategory = async (id: string) => {
+    const fetchFeatures = async () => {
       try {
-        const response = await categoryService.getFeaturesByCategory(id);
+        const response = await featureService.getAllFeatures();
         if (response.success && response.data) {
           setFeatures(response.data.features);
         } else {
@@ -100,24 +100,25 @@ const AddProduct = () => {
       }
     };
 
-    if (danhMucId) {
-      fetchFeaturesFromCategory(danhMucId);
-    }
-  }, [danhMucId, categoryService]);
-
-  useEffect(() => {
-    features.forEach((feature, index) => {
-      // Gán giá trị ten vào tenDT
-      form.setValue(`features.${index}.tenDT`, feature.ten);
-    });
-  }, [features, form]);
+    fetchFeatures();
+  }, [featureService]);
 
   const onSubmit = async (values: z.infer<typeof productFormSchema>) => {
-    console.log(values);
     try {
       if (values.moTa === null) {
         values.moTa = "";
       }
+
+      if (values.features) {
+        values.features = values.features.map((feature) => ({
+          ...feature,
+          _id: feature._id,
+          tenDT: feature.tenDT || "",
+          giaTri: feature.giaTri || "",
+        }));
+      }
+
+      console.log(values);
 
       if (values.imageUrl && values.imageUrl instanceof File) {
         // Lấy file ảnh từ form
@@ -221,6 +222,7 @@ const AddProduct = () => {
                     onChange={(e) =>
                       field.onChange(Number(e.target.value) || 0)
                     }
+                    readOnly
                   />
                 </FormControl>
                 <FormMessage />
@@ -412,42 +414,107 @@ const AddProduct = () => {
             )}
           />
 
-          {features.map((feature, index) => (
-            <div key={feature._id}>
-              {/* Hidden input để giữ `_id` */}
-              <input
-                type="hidden"
-                {...form.register(`features.${index}._id`)}
-                value={feature._id}
-              />
-
-              {/* Hidden input để giữ `tenDT` */}
-              <input
-                type="hidden"
-                {...form.register(`features.${index}.tenDT`)} // Đảm bảo tenDT được đăng ký
-                value={feature.ten} // Gán giá trị ten vào tenDT
-              />
-
-              {/* Input cho `giaTri` */}
-              <FormField
-                control={form.control}
-                name={`features.${index}.giaTri`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{feature.ten}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={`Enter value for ${feature.ten}`}
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)} // Update `giaTri`
+          <FormField
+            control={form.control}
+            name="features"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Features</FormLabel>
+                <div className="space-y-4">
+                  {field.value.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="flex gap-4 items-center border-b border-gray-300 pb-2"
+                    >
+                      <FormField
+                        control={form.control}
+                        name={`features.${index}._id`}
+                        render={({ field: fieldId }) => (
+                          <div className="w-1/2">
+                            <FormLabel>Feature</FormLabel>
+                            <Select
+                              value={feature._id || ""}
+                              onValueChange={(value) => {
+                                const selectedFeature = features.find(
+                                  (f) => f._id === value
+                                );
+                                if (selectedFeature) {
+                                  const updatedFeatures = [...field.value];
+                                  updatedFeatures[index] = {
+                                    _id: selectedFeature._id,
+                                    tenDT: selectedFeature.ten,
+                                    giaTri:
+                                      updatedFeatures[index]?.giaTri || "", // Preserve giaTri if exists
+                                  };
+                                  field.onChange(updatedFeatures); // Update the whole array
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select feature" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {features.map((f) => (
+                                  <SelectItem key={f._id} value={f._id}>
+                                    {f.ten}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          ))}
+                      <FormField
+                        control={form.control}
+                        name={`features.${index}.giaTri`}
+                        render={({ field: fieldGiaTri }) => (
+                          <div className="w-1/2">
+                            <FormLabel>Value</FormLabel>
+                            <Input
+                              placeholder="Enter value"
+                              value={feature.giaTri || ""} // Ensure giaTri value is properly displayed
+                              onChange={(e) => {
+                                const updatedFeatures = [...field.value];
+                                updatedFeatures[index] = {
+                                  ...updatedFeatures[index],
+                                  giaTri: e.target.value, // Update giaTri when the input changes
+                                };
+                                field.onChange(updatedFeatures);
+                              }}
+                            />
+                          </div>
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        className="text-red-500 hover:text-white bg-white hover:bg-red-500 border border-red-500 rounded"
+                        onClick={() => {
+                          const updatedFeatures = [...field.value];
+                          updatedFeatures.splice(index, 1); // Remove the feature at the current index
+                          field.onChange(updatedFeatures);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    className="bg-blue-500 text-white hover:bg-blue-600"
+                    onClick={() => {
+                      const updatedFeatures = [
+                        ...field.value,
+                        { _id: "", tenDT: "", giaTri: "" }, // Add a new feature with empty values
+                      ];
+                      field.onChange(updatedFeatures);
+                    }}
+                  >
+                    Add Feature
+                  </Button>
+                </div>
+              </FormItem>
+            )}
+          />
 
           <Button
             asChild
