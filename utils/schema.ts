@@ -61,7 +61,7 @@ export const productFormSchema = z.object({
     rong: z.number().positive(),
     cao: z.number().positive(),
   }),
-  khuyenMai: z.number().positive().nullable(),
+  khuyenMai: z.number().nullable(),
   imageUrl: z.union([z.instanceof(File), z.string().nullable()]),
   moTa: z.string().nullable(),
   danhMucId: z.string(),

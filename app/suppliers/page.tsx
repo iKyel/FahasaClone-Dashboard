@@ -78,14 +78,14 @@ const Supplier = () => {
         <TableCaption>A list of your recent suppliers.</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-1/3">ID</TableHead>
-            <TableHead className="w-2/3">Name</TableHead>
+            <TableHead className="w-1/4">ID</TableHead>
+            <TableHead className="w-3/4">Name</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {suppliers.map((supplier, index) => (
             <TableRow key={index}>
-              <TableCell className="font-medium">{supplier._id}</TableCell>
+              <TableCell className="font-medium">{index + 1}</TableCell>
               <TableCell>{supplier.ten}</TableCell>
             </TableRow>
           ))}

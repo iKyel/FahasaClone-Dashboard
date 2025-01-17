@@ -39,8 +39,8 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
         </TableCell>
         <TableCell>{product._id}</TableCell>
         <TableCell>{product.tenSP}</TableCell>
-        <TableCell>{product.giaBan}000</TableCell>
-        <TableCell>{product.giaNhap}000</TableCell>
+        <TableCell>{product.giaBan}</TableCell>
+        <TableCell>{product.giaNhap}</TableCell>
         <TableCell>{product.soLuong}</TableCell>
         <TableCell className="flex justify-end items-center">
           <button className="mt-2" onClick={toggleAccordion}>
