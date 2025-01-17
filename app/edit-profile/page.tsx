@@ -70,19 +70,6 @@ const EditStaff = () => {
   }, [staff, form]);
 
   const onSubmit = async (values: z.infer<typeof updateFormSchema>) => {
-    alert(
-      values.hoDem +
-        " - " +
-        values.ten +
-        " - " +
-        values.email +
-        " - " +
-        values.gioiTinh +
-        " - " +
-        values.ngaySinh +
-        " - " +
-        values.sdt
-    );
     try {
       const response = await userService.updateProfile(values);
       console.log(response);

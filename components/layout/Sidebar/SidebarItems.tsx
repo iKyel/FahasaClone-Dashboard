@@ -1,4 +1,4 @@
-import { Container, Home, ShieldCheckIcon, Star, User } from "lucide-react";
+import { Container, Home, ShieldCheckIcon, User } from "lucide-react";
 import {
   FaBook,
   FaComment,
@@ -24,19 +24,19 @@ export const items = [
     title: "Product",
     url: "/products",
     icon: FaBook,
-    // allowedRoles: ["NV", "QTV"],
+    allowedRoles: ["NV", "QTV"],
   },
   {
     title: "Invoice",
     url: "/invoices",
     icon: FaShoppingCart,
-    // allowedRoles: ["NV", "QTV"],
+    allowedRoles: ["NV", "QTV"],
   },
   {
     title: "Staff",
     url: "/staffs",
     icon: ShieldCheckIcon,
-    // allowedRoles: ["QTV"],
+    allowedRoles: ["QTV"],
   },
   {
     title: "Supplier",
@@ -60,12 +60,12 @@ export const items = [
     title: "Comment",
     url: "/comments",
     icon: FaComment,
-    // allowedRoles: ["QTV", "NV"],
+    allowedRoles: ["QTV", "NV"],
   },
-  {
-    title: "Feature",
-    url: "/features",
-    icon: Star,
-    // allowedRoles: ["QTV", "NV"],
-  },
+  // {
+  //   title: "Feature",
+  //   url: "/features",
+  //   icon: Star,
+  //   // allowedRoles: ["QTV", "NV"],
+  // },
 ];

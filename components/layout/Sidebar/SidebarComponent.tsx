@@ -15,11 +15,12 @@ import Image from "next/image";
 import SearchContext from "@/contexts/SearchContext";
 import { AppContext } from "@/contexts/AppContext";
 import Link from "next/link";
+import StaffContext from "@/contexts/StaffContext";
 
 export default function SidebarComponent() {
   const { activeItem, setActiveItem } = useContext(AppContext);
   const { setSearchType } = useContext(SearchContext);
-  // const { staff } = useContext(StaffContext);
+  const { staff } = useContext(StaffContext);
   return (
     <Sidebar className="w-64">
       <SidebarContent>
@@ -36,30 +37,30 @@ export default function SidebarComponent() {
             <SidebarMenu>
               {items.map((item) => {
                 return (
-                  // item.allowedRoles &&
-                  // staff?.loaiTK &&
-                  // item.allowedRoles.includes(staff?.loaiTK) && (
-                  <SidebarMenuItem key={item.title} className="mb-3">
-                    <SidebarMenuButton asChild>
-                      <Link
-                        href={item.url}
-                        onClick={() => {
-                          setActiveItem(item.title);
-                          setSearchType(item.title);
-                        }}
-                        className={`flex items-center space-x-2 p-3 rounded-md transition-colors duration-200 ${
-                          activeItem === item.title
-                            ? "bg-orange-400 text-white"
-                            : "text-gray-700 hover:bg-orange-300"
-                        }`}
-                      >
-                        <item.icon className="text-xl" />
-                        <span className="text-lg">{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                  item.allowedRoles &&
+                  staff?.loaiTK &&
+                  item.allowedRoles.includes(staff?.loaiTK) && (
+                    <SidebarMenuItem key={item.title} className="mb-3">
+                      <SidebarMenuButton asChild>
+                        <Link
+                          href={item.url}
+                          onClick={() => {
+                            setActiveItem(item.title);
+                            setSearchType(item.title);
+                          }}
+                          className={`flex items-center space-x-2 p-3 rounded-md transition-colors duration-200 ${
+                            activeItem === item.title
+                              ? "bg-orange-400 text-white"
+                              : "text-gray-700 hover:bg-orange-300"
+                          }`}
+                        >
+                          <item.icon className="text-xl" />
+                          <span className="text-lg">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
                 );
-                // );
               })}
             </SidebarMenu>
           </SidebarGroupContent>
