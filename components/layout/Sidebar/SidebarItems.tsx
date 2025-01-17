@@ -12,13 +12,13 @@ export const items = [
     title: "Home",
     url: "/",
     icon: Home,
-    // allowedRoles: ["NV", "QTV"],
+    allowedRoles: ["NV", "QTV"],
   },
   {
     title: "Customer",
     url: "/customers",
     icon: User,
-    // allowedRoles: ["NV", "QTV"],
+    allowedRoles: ["NV", "QTV"],
   },
   {
     title: "Product",
@@ -42,19 +42,19 @@ export const items = [
     title: "Supplier",
     url: "/suppliers",
     icon: Container,
-    // allowedRoles: ["QTV", "NV"],
+    allowedRoles: ["QTV", "NV"],
   },
   {
     title: "Goods received note",
     url: "/grn",
     icon: FaFileInvoice,
-    // allowedRoles: ["QTV", "NV"],
+    allowedRoles: ["QTV", "NV"],
   },
   {
     title: "Category",
     url: "/categories",
     icon: TbCategory,
-    // allowedRoles: ["NV", "QTV"],
+    allowedRoles: ["NV", "QTV"],
   },
   {
     title: "Comment",
