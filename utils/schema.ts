@@ -87,3 +87,19 @@ export const supplierFormSchema = z.object({
   ten: z.string(),
   danhMucId: z.string(),
 });
+
+// ===================================================
+export const grnFormSchema = z.object({
+  purchaseInvoice: z.object({
+    supplierId: z.string(),
+    ghiChu: z.string(),
+    tongTien: z.number(),
+  }),
+  detailPurchaseInvoices: z.array(
+    z.object({
+      productId: z.string(),
+      soLuong: z.number(),
+      thanhTien: z.number(),
+    })
+  ),
+});

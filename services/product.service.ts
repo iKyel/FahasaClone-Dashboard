@@ -104,6 +104,21 @@ export class ProductService {
     );
   }
 
+  public async getProductPriceAndName(id: string): Promise<
+    ApiResponse<{
+      message: string;
+      productDetail: {
+        _id: string;
+        tenSP: string;
+        giaNhap: number;
+      };
+    }>
+  > {
+    return await this.apiUtils.get(
+      `${API_ROUTES.product}/getProductDetail/${id}`
+    );
+  }
+
   public async updateProduct(
     id: string,
     values: {

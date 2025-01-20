@@ -216,7 +216,6 @@ const ProductDetail = () => {
 
   const onSubmit = async (values: z.infer<typeof productFormSchema>) => {
     console.log(values);
-    console.log(imagePreview);
     try {
       if (values.moTa === null) {
         values.moTa = "";
@@ -548,7 +547,7 @@ const ProductDetail = () => {
                             <Select
                               value={feature._id || ""} // Hiển thị giá trị _id hiện tại của feature
                               onValueChange={(value) => {
-                                const selectedFeature = features.find(
+                                const selectedFeature = featuresSelect.find(
                                   (f) => f._id === value
                                 );
                                 if (selectedFeature) {
@@ -556,11 +555,11 @@ const ProductDetail = () => {
                                   updatedFeatures[index] = {
                                     ...updatedFeatures[index],
                                     _id: selectedFeature._id,
-                                    tenDT: selectedFeature.ten, // Cập nhật tenDT từ selectedFeature
+                                    tenDT: selectedFeature.ten,
                                     giaTri:
-                                      updatedFeatures[index]?.giaTri || "", // Giữ giaTri nếu có
+                                      updatedFeatures[index]?.giaTri || "", // Giữ giá trị giaTri nếu có
                                   };
-                                  field.onChange(updatedFeatures); // Cập nhật lại toàn bộ mảng features
+                                  field.onChange(updatedFeatures);
                                 }
                               }}
                             >

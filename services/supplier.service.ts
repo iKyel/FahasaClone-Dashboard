@@ -40,4 +40,17 @@ export class SupplierService {
   > {
     return this.apiUtils.post(`${API_ROUTES.supplier}/add`, value);
   }
+
+  public async getSupplierById(id: string): Promise<
+    ApiResponse<{
+      supplier: {
+        _id: string;
+        ten: string;
+        __v: number;
+      };
+      message: string;
+    }>
+  > {
+    return this.apiUtils.get(`${API_ROUTES.supplier}/get/${id}`);
+  }
 }

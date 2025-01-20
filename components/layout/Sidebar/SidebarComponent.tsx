@@ -1,7 +1,6 @@
 "use client";
 import { useContext } from "react";
 import { items } from "./SidebarItems";
-
 import {
   Sidebar,
   SidebarContent,
@@ -18,9 +17,10 @@ import Link from "next/link";
 import StaffContext from "@/contexts/StaffContext";
 
 export default function SidebarComponent() {
-  const { activeItem, setActiveItem } = useContext(AppContext);
+  const { activeItem } = useContext(AppContext);
   const { setSearchType } = useContext(SearchContext);
   const { staff } = useContext(StaffContext);
+
   return (
     <Sidebar className="w-64">
       <SidebarContent>
@@ -45,7 +45,6 @@ export default function SidebarComponent() {
                         <Link
                           href={item.url}
                           onClick={() => {
-                            setActiveItem(item.title);
                             setSearchType(item.title);
                           }}
                           className={`flex items-center space-x-2 p-3 rounded-md transition-colors duration-200 ${
