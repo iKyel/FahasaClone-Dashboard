@@ -85,7 +85,6 @@ const CategoryOption = ({
     </>
   );
 };
-
 const AddProduct = () => {
   const router = useRouter();
   const productService = useMemo(() => ProductService.getInstance(), []);
