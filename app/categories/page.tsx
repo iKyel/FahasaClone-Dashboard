@@ -25,7 +25,7 @@ const CategoryTree = () => {
         const response = await axios.get(
           "http://localhost:3412/api/category/getCategories"
         );
-        const danhMucs = response.data.danhMucIds;
+        const danhMucs = response.data.categories;
 
         const buildTree = (parentId: string | null) => {
           return danhMucs
