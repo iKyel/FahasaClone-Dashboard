@@ -41,7 +41,9 @@ const Product = () => {
     const fetchProducts = async () => {
       try {
         let response;
-        if (search === "") response = await productService.getProducts();
+        if (search === "") response = await productService.getProducts({
+          pageNum: pageNum
+        });
         else
           response = await productService.searchProducts({
             searchName: search,
@@ -115,7 +117,6 @@ const Product = () => {
               <PaginationPrevious
                 onClick={() => {
                   setPageNum((num) => num - 1);
-                  alert(pageNum);
                 }}
                 tabIndex={pageNum <= 1 ? -1 : undefined}
                 aria-disabled={pageNum === 1}
@@ -150,7 +151,6 @@ const Product = () => {
                 }
                 onClick={() => {
                   setPageNum((num) => num + 1);
-                  alert(pageNum);
                 }}
               />
             </PaginationItem>
