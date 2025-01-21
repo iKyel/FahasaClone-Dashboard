@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useRouter } from "next/router";
 import { items } from "@/components/layout/Sidebar/SidebarItems";
+import { usePathname } from "next/navigation";
 
 interface AppContextType {
   language: string;
@@ -28,16 +29,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [language, setLanguage] = useState<string>("English");
   const [activeItem, setActiveItem] = useState<string>("Home");
-  // const router = useRouter();
+  const path = usePathname();
 
-  // useEffect(() => {
-  //   // Cập nhật `activeItem` dựa trên `pathName`
-  //   const currentPath = router.pathname;
-  //   const matchedItem = items.find((item) => item.url === currentPath)?.title;
-  //   if (matchedItem) {
-  //     setActiveItem(matchedItem);
-  //   }
-  // }, [router.pathname]); // Chạy lại khi `pathName` thay đổi
+  useEffect(() => {
+    const currentPath = path;
+    const matchedItem = items.find((item) => item.url === currentPath)?.title;
+    if (matchedItem) {
+      alert(matchedItem)
+      setActiveItem(matchedItem);
+    }
+  }, [path]);
 
   return (
     <AppContext.Provider

@@ -1,7 +1,7 @@
 import { Container, Home, ShieldCheckIcon, User } from "lucide-react";
 import {
   FaBook,
-  FaComment,
+  // FaComment,
   FaFileInvoice,
   FaShoppingCart,
 } from "react-icons/fa";
@@ -56,12 +56,12 @@ export const items = [
     icon: TbCategory,
     allowedRoles: ["NV", "QTV"],
   },
-  {
-    title: "Comment",
-    url: "/comments",
-    icon: FaComment,
-    allowedRoles: ["QTV", "NV"],
-  },
+  // {
+  //   title: "Comment",
+  //   url: "/comments",
+  //   icon: FaComment,
+  //   allowedRoles: ["QTV", "NV"],
+  // },
   // {
   //   title: "Feature",
   //   url: "/features",
