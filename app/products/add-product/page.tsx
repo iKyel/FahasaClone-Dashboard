@@ -34,6 +34,57 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FeatureService } from "@/services/feature.service";
 
+interface CategoryNode extends CategoryDTO {
+  children: CategoryNode[];
+}
+
+const buildCategoryTree = (categories: CategoryDTO[]): CategoryNode[] => {
+  const categoryMap = new Map<string, CategoryNode>();
+  const rootNodes: CategoryNode[] = [];
+
+  // Chuyển đổi tất cả danh mục thành các node với mảng children trống
+  categories.forEach((category) => {
+    categoryMap.set(category._id, { ...category, children: [] });
+  });
+
+  // Xây dựng cấu trúc cây
+  categories.forEach((category) => {
+    const node = categoryMap.get(category._id)!;
+    if (category.parentId === null) {
+      rootNodes.push(node);
+    } else {
+      const parentNode = categoryMap.get(category.parentId);
+      if (parentNode) {
+        parentNode.children.push(node);
+      }
+    }
+  });
+
+  return rootNodes;
+};
+
+const CategoryOption = ({
+  category,
+  level = 0,
+}: {
+  category: CategoryNode;
+  level?: number;
+}) => {
+  const paddingLeft = level * 16; // Adjust the multiplier as needed for desired indentation
+
+  return (
+    <>
+      <SelectItem value={category._id} className="w-full">
+        <span className="block" style={{ paddingLeft }}>
+          {category.ten}
+        </span>
+      </SelectItem>
+      {category.children.map((child) => (
+        <CategoryOption key={child._id} category={child} level={level + 1} />
+      ))}
+    </>
+  );
+};
 const AddProduct = () => {
   const router = useRouter();
   const productService = useMemo(() => ProductService.getInstance(), []);
@@ -345,7 +396,6 @@ const AddProduct = () => {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="imageUrl"
@@ -384,7 +434,6 @@ const AddProduct = () => {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="danhMucId"
@@ -393,19 +442,19 @@ const AddProduct = () => {
                 <FormLabel>Category</FormLabel>
                 <FormControl>
                   <Select
-                    value={field.value || ""} // Đảm bảo rằng value của Select luôn được cập nhật
-                    onValueChange={(value) => field.onChange(value)} // Sử dụng onValueChange để cập nhật giá trị
+                    value={field.value || ""}
+                    onValueChange={(value) => field.onChange(value)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Category" />
+                      <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories &&
-                        categories.map((category, index) => (
-                          <SelectItem key={index} value={category._id}>
-                            {category.ten}
-                          </SelectItem>
-                        ))}
+                      {buildCategoryTree(categories).map((category) => (
+                        <CategoryOption
+                          key={category._id}
+                          category={category}
+                        />
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormControl>
@@ -413,7 +462,6 @@ const AddProduct = () => {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="features"
@@ -515,7 +563,6 @@ const AddProduct = () => {
               </FormItem>
             )}
           />
-
           <Button
             asChild
             className="bg-green-500 text-white hover:bg-white hover:text-green-500 border-2 border-green-500"
