@@ -35,7 +35,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     const currentPath = path;
     const matchedItem = items.find((item) => item.url === currentPath)?.title;
     if (matchedItem) {
-      alert(matchedItem)
+      // alert(matchedItem)
       setActiveItem(matchedItem);
     }
   }, [path]);
