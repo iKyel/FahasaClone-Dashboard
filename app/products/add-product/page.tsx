@@ -110,11 +110,11 @@ const AddProduct = () => {
       giaBan: 1,
       giaNhap: 1,
       soLuong: 0,
-      trongLuong: 1,
+      trongLuong: 350,
       kichThuoc: {
-        dai: 1,
-        rong: 1,
-        cao: 1,
+        dai: 18,
+        rong: 15,
+        cao: 2,
       },
       khuyenMai: 1,
       imageUrl: null,
@@ -142,7 +142,7 @@ const AddProduct = () => {
       try {
         const response = await featureService.getAllFeatures();
         if (response.success && response.data) {
-          setFeatures(response.data.features);
+          setFeatures(response.data.features.sort((a, b) => a.ten.localeCompare(b.ten)));
         } else {
           console.log(response.error);
         }

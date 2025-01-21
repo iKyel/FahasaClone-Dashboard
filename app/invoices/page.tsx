@@ -9,6 +9,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Table,
   TableBody,
   TableCaption,
@@ -25,10 +34,14 @@ import { useRouter } from "next/navigation";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { TbCheck, TbLockCancel, TbReload } from "react-icons/tb";
+import page from "../page";
 
 const GoodReceiveNotes = () => {
   const router = useRouter();
   const [invoices, setInvoices] = useState<InvoiceDTO[]>([]);
+
+  const [pageNum, setPageNum] = useState<number>(1);
+  const [totalPage, setTotalPage] = useState<number>(1);
 
   const invoiceService = useMemo(() => InvoiceService.getInstance(), []);
 
@@ -39,13 +52,21 @@ const GoodReceiveNotes = () => {
       try {
         let response;
         if (search) {
-          response = await invoiceService.searchInvoice({ id: search });
+          if (pageNum === 1) {
+            response = await invoiceService.searchInvoice({ id: search });
+          } else {
+            response = await invoiceService.searchInvoice({
+              id: search,
+              pageNum: pageNum,
+            });
+          }
         } else {
           response = await invoiceService.getAll();
         }
 
         if (response.success) {
           setInvoices(response.data?.saleInvoices || []);
+          setTotalPage(response.data?.soLuong || 1);
         } else {
           console.log(response.error?.message);
         }
@@ -186,6 +207,54 @@ const GoodReceiveNotes = () => {
           ))}
         </TableBody>
       </Table>
+
+      <div className="bottom-1 flex justify-center items-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  setPageNum((num) => num - 1);
+                }}
+                tabIndex={pageNum <= 1 ? -1 : undefined}
+                aria-disabled={pageNum === 1}
+                className={
+                  pageNum <= 1 ? "pointer-events-none opacity-50" : undefined
+                }
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPage }, (_, index) => index + 1).map(
+              (page) => (
+                <PaginationItem
+                  key={page}
+                  className={page === pageNum ? `bg-yellow` : ``}
+                >
+                  <PaginationLink onClick={() => setPageNum(page)}>
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                tabIndex={pageNum >= totalPage ? -1 : undefined}
+                aria-disabled={pageNum === totalPage}
+                className={
+                  pageNum >= totalPage
+                    ? "pointer-events-none opacity-50"
+                    : undefined
+                }
+                onClick={() => {
+                  setPageNum((num) => num + 1);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </>
   );
 };

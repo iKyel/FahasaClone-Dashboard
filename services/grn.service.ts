@@ -15,7 +15,7 @@ export class GoodReceiveNotesService {
     return this.instance;
   }
 
-  public async getAll(): Promise<
+  public async getAll(values?: { pageNum: number }): Promise<
     ApiResponse<{
       purchaseInvoices: Array<{
         _id: string;
@@ -28,7 +28,7 @@ export class GoodReceiveNotesService {
       message: string;
     }>
   > {
-    return await this.apiUtils.get(`${API_ROUTES.grn}/getAll`);
+    return await this.apiUtils.get(`${API_ROUTES.grn}/getAll`, values);
   }
 
   public async create(values: {

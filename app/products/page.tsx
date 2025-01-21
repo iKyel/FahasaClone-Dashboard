@@ -24,6 +24,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { ArrowUpDown } from "lucide-react";
+
+type Sorting = "ID" | "NAME" | "PRICE" | "COST" | "QUANTITY" | "";
+type SortingOrder = "asc" | "desc";
 
 const Product = () => {
   const productService: ProductService = useMemo(
@@ -36,12 +40,17 @@ const Product = () => {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [pageNum, setPageNum] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
+  const [sorting, setSorting] = useState<Sorting>("");
+  const [sortingOrder, setSortingOrder] = useState<SortingOrder>("asc");
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         let response;
-        if (search === "") response = await productService.getProducts();
+        if (search === "")
+          response = await productService.getProducts({
+            pageNum: pageNum,
+          });
         else
           response = await productService.searchProducts({
             searchName: search,
@@ -62,6 +71,68 @@ const Product = () => {
             })) || []
           );
 
+          if (sorting === "ID") {
+            setProducts((prev) =>
+              prev.sort((a, b) => {
+                const compareResult = a._id?.localeCompare(b?._id || "");
+                // Nếu sortingOrder là "asc", sắp xếp tăng dần
+                if (sortingOrder === "asc") {
+                  return compareResult || 0;
+                }
+                // Nếu sortingOrder là "desc", sắp xếp giảm dần
+                return -1 * (compareResult || 0);
+              })
+            );
+          } else if (sorting === "NAME") {
+            setProducts((prev) =>
+              prev.sort((a, b) => {
+                const compareResult = a.tenSP?.localeCompare(b?.tenSP || "");
+                // Nếu sortingOrder là "asc", sắp xếp tăng dần
+                if (sortingOrder === "asc") {
+                  return compareResult || 0;
+                }
+                // Nếu sortingOrder là "desc", sắp xếp giảm dần
+                return -1 * (compareResult || 0);
+              })
+            );
+          } else if (sorting === "PRICE") {
+            setProducts((prev) =>
+              prev.sort((a, b) => {
+                const compareResult = (a.giaBan || 0) - (b.giaBan || 0); // Sử dụng phép trừ để so sánh giá trị
+                // Nếu sortingOrder là "asc", sắp xếp tăng dần
+                if (sortingOrder === "asc") {
+                  return compareResult;
+                }
+                // Nếu sortingOrder là "desc", sắp xếp giảm dần
+                return -compareResult;
+              })
+            );
+          } else if (sorting === "COST") {
+            setProducts((prev) =>
+              prev.sort((a, b) => {
+                const compareResult = (a.giaNhap || 0) - (b.giaNhap || 0); // Sử dụng phép trừ để so sánh giá trị
+                // Nếu sortingOrder là "asc", sắp xếp tăng dần
+                if (sortingOrder === "asc") {
+                  return compareResult;
+                }
+                // Nếu sortingOrder là "desc", sắp xếp giảm dần
+                return -compareResult;
+              })
+            );
+          } else if (sorting === "QUANTITY") {
+            setProducts((prev) =>
+              prev.sort((a, b) => {
+                const compareResult = (a.soLuong || 0) - (b.soLuong || 0); // Sử dụng phép trừ để so sánh giá trị
+                // Nếu sortingOrder là "asc", sắp xếp tăng dần
+                if (sortingOrder === "asc") {
+                  return compareResult;
+                }
+                // Nếu sortingOrder là "desc", sắp xếp giảm dần
+                return -compareResult;
+              })
+            );
+          }
+
           if (response.data?.totalPage) setTotalPage(response.data?.totalPage);
         } else {
           console.log(response.error?.message || "Failed to fetch products");
@@ -76,7 +147,7 @@ const Product = () => {
     };
 
     fetchProducts();
-  }, [productService, search, pageNum]);
+  }, [productService, search, pageNum, sorting, sortingOrder]);
 
   return (
     <>
@@ -94,11 +165,56 @@ const Product = () => {
           <TableRow>
             <TableHead>#</TableHead>
             <TableHead>Image</TableHead>
-            <TableHead>ID</TableHead>
-            <TableHead className="w-1/3">Name</TableHead>
-            <TableHead>Selling Price</TableHead>
-            <TableHead>Cost</TableHead>
-            <TableHead>Quantity</TableHead>
+            <TableHead className="flex items-center gap-2">
+              ID{" "}
+              <ArrowUpDown
+                onClick={() => {
+                  setSorting("ID");
+                  setSortingOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                }}
+                className="inline w-3"
+              />
+            </TableHead>
+            <TableHead className="w-1/3">
+              Name{" "}
+              <ArrowUpDown
+                onClick={() => {
+                  setSorting("NAME");
+                  setSortingOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                }}
+                className="inline w-3"
+              />
+            </TableHead>
+            <TableHead>
+              Selling Price{" "}
+              <ArrowUpDown
+                onClick={() => {
+                  setSorting("PRICE");
+                  setSortingOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                }}
+                className="inline w-3"
+              />
+            </TableHead>
+            <TableHead>
+              Cost{" "}
+              <ArrowUpDown
+                onClick={() => {
+                  setSorting("COST");
+                  setSortingOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                }}
+                className="inline w-3"
+              />
+            </TableHead>
+            <TableHead>
+              Quantity{" "}
+              <ArrowUpDown
+                onClick={() => {
+                  setSorting("QUANTITY");
+                  setSortingOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+                }}
+                className="inline w-3"
+              />
+            </TableHead>
             <TableHead></TableHead>
           </TableRow>
         </TableHeader>
@@ -115,7 +231,6 @@ const Product = () => {
               <PaginationPrevious
                 onClick={() => {
                   setPageNum((num) => num - 1);
-                  alert(pageNum);
                 }}
                 tabIndex={pageNum <= 1 ? -1 : undefined}
                 aria-disabled={pageNum === 1}
@@ -150,7 +265,6 @@ const Product = () => {
                 }
                 onClick={() => {
                   setPageNum((num) => num + 1);
-                  alert(pageNum);
                 }}
               />
             </PaginationItem>
