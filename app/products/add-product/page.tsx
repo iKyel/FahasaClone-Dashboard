@@ -142,7 +142,7 @@ const AddProduct = () => {
       try {
         const response = await featureService.getAllFeatures();
         if (response.success && response.data) {
-          setFeatures(response.data.features);
+          setFeatures(response.data.features.sort((a, b) => a.ten.localeCompare(b.ten)));
         } else {
           console.log(response.error);
         }

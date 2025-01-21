@@ -210,7 +210,7 @@ const InvoiceDetails = () => {
                 <TableCell>
                   <strong className="text-lg">Subtotal:</strong>{" "}
                 </TableCell>
-                <TableCell className="text-lg font-bold">
+                <TableCell className="text-lg font-bold text-end">
                   {total.toFixed(2)}
                 </TableCell>
               </TableRow>
@@ -221,7 +221,7 @@ const InvoiceDetails = () => {
                 <TableCell>
                   <strong className="text-lg">Sale:</strong>{" "}
                 </TableCell>
-                <TableCell className="text-lg font-bold">
+                <TableCell className="text-lg font-bold text-end">
                   {(total - invoiceDetail.saleInvoice.tongTien).toFixed(2)}
                 </TableCell>
               </TableRow>
@@ -232,7 +232,7 @@ const InvoiceDetails = () => {
                 <TableCell>
                   <strong className="text-lg">Total:</strong>{" "}
                 </TableCell>
-                <TableCell className="text-lg font-bold">
+                <TableCell className="text-lg font-bold text-end">
                   {invoiceDetail.saleInvoice.tongTien.toFixed(2)}
                 </TableCell>
               </TableRow>

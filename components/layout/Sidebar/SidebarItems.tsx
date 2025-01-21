@@ -10,7 +10,7 @@ import { TbCategory } from "react-icons/tb";
 export const items = [
   {
     title: "Home",
-    url: "/",
+    url: "/home",
     icon: Home,
     allowedRoles: ["NV", "QTV"],
   },

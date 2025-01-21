@@ -36,7 +36,10 @@ export class InvoiceService {
     return await this.apiUtils.get(`${API_ROUTES.invoice}/staffGetSaleInvokes`);
   }
 
-  public async searchInvoice(values: { id: string }): Promise<
+  public async searchInvoice(values?: {
+    id: string;
+    pageNum?: number;
+  }): Promise<
     ApiResponse<{
       saleInvoices: Array<{
         _id: string;
@@ -55,7 +58,8 @@ export class InvoiceService {
     }>
   > {
     return await this.apiUtils.get(
-      `${API_ROUTES.invoice}/findSaleInvoices/${values.id}`
+      `${API_ROUTES.invoice}/findSaleInvoices`,
+      values
     );
   }
 

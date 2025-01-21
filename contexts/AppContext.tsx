@@ -6,7 +6,6 @@ import {
   useState,
   useEffect,
 } from "react";
-import { useRouter } from "next/router";
 import { items } from "@/components/layout/Sidebar/SidebarItems";
 import { usePathname } from "next/navigation";
 
@@ -33,9 +32,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const currentPath = path;
-    const matchedItem = items.find((item) => item.url === currentPath)?.title;
+    const matchedItem = items.find((item) => currentPath.startsWith(item.url))?.title;
     if (matchedItem) {
-      // alert(matchedItem)
       setActiveItem(matchedItem);
     }
   }, [path]);
