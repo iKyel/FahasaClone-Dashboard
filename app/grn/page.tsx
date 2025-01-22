@@ -55,13 +55,17 @@ const GoodReceiveNotes = () => {
       try {
         let response;
         if (search) {
-          response = await grnService.searchGrn({ id: search });
+          response = await grnService.searchGrn({
+            id: search,
+            pageNum: pageNum,
+          });
         } else {
-          response = await grnService.getAll();
+          response = await grnService.getAll({ pageNum: pageNum });
         }
 
         if (response.success) {
           setGrns(response.data?.purchaseInvoices || []);
+          setTotalPage(response.data?.totalPage || 1);
         } else {
           console.log(response.error?.message);
         }
@@ -74,7 +78,7 @@ const GoodReceiveNotes = () => {
     };
 
     fetchGrns();
-  }, [grnService, search]);
+  }, [grnService, search, pageNum]);
 
   useEffect(() => {
     const fetchSupplierNames = async () => {
@@ -221,6 +225,15 @@ const GoodReceiveNotes = () => {
                 <PaginationItem
                   key={page}
                   className={page === pageNum ? `bg-yellow` : ``}
+                  style={
+                    page === pageNum
+                      ? {
+                          backgroundColor: "orange",
+                          borderRadius: "5px",
+                          border: "none",
+                        }
+                      : {}
+                  }
                 >
                   <PaginationLink onClick={() => setPageNum(page)}>
                     {page}

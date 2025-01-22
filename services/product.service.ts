@@ -19,7 +19,7 @@ export class ProductService {
   public async createProduct(values: {
     tenSP: string;
     giaBan: number;
-    giaNhap: number;
+    // giaNhap: number;
     soLuong: number;
     trongLuong: number;
     kichThuoc: {

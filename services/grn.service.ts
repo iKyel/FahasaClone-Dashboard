@@ -21,11 +21,13 @@ export class GoodReceiveNotesService {
         _id: string;
         nhaCungCapId: string;
         nhanVienId: string;
+        tenNV: string;
         trangThaiDon: string;
         ghiChu: string;
         tongTien: number;
       }>;
       message: string;
+      totalPage: number;
     }>
   > {
     return await this.apiUtils.get(`${API_ROUTES.grn}/getAll`, values);
@@ -103,7 +105,7 @@ export class GoodReceiveNotesService {
     return await this.apiUtils.get(`${API_ROUTES.grn}/getDetail/${id}`);
   }
 
-  public async searchGrn(values: { id: string }): Promise<
+  public async searchGrn(values?: { id: string; pageNum: number }): Promise<
     ApiResponse<{
       purchaseInvoices: Array<{
         _id: string;
@@ -114,6 +116,7 @@ export class GoodReceiveNotesService {
         tongTien: number;
       }>;
       message: string;
+      totalPage: number;
     }>
   > {
     return await this.apiUtils.get(`${API_ROUTES.grn}/searchInvoice`, values);

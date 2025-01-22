@@ -53,7 +53,7 @@ export const changePasswordFormSchema = z.object({
 export const productFormSchema = z.object({
   tenSP: z.string().min(3),
   giaBan: z.number().positive(),
-  giaNhap: z.number().positive(),
+  // giaNhap: z.number().positive(),
   soLuong: z.number(),
   trongLuong: z.number().positive(),
   kichThuoc: z.object({

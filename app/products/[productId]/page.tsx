@@ -604,7 +604,7 @@ const ProductDetail = () => {
                       {/* Remove Button */}
                       <Button
                         type="button"
-                        className="text-red-500 hover:text-white bg-white hover:bg-red-500 border border-red-500 rounded"
+                        className="text-red-500 hover:text-white bg-white hover:bg-red-500 border border-red-500 rounded mt-5"
                         onClick={() => {
                           const updatedFeatures = [...field.value];
                           updatedFeatures.splice(index, 1); // Xóa feature tại index hiện tại

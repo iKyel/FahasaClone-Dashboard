@@ -29,12 +29,10 @@ import {
 import SearchContext from "@/contexts/SearchContext";
 import { InvoiceService } from "@/services/invoice.service";
 import { InvoiceDTO } from "@/types/invoice.type";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { TbCheck, TbLockCancel, TbReload } from "react-icons/tb";
-import page from "../page";
 
 const GoodReceiveNotes = () => {
   const router = useRouter();
@@ -51,22 +49,21 @@ const GoodReceiveNotes = () => {
     const fetchInvoices = async () => {
       try {
         let response;
-        if (search) {
-          if (pageNum === 1) {
-            response = await invoiceService.searchInvoice({ id: search });
-          } else {
-            response = await invoiceService.searchInvoice({
-              id: search,
-              pageNum: pageNum,
-            });
-          }
+        if (search && search !== "") {
+          response = await invoiceService.searchInvoice(search, {
+            page: pageNum,
+            limit: 24,
+          });
         } else {
-          response = await invoiceService.getAll();
+          response = await invoiceService.getAll({
+            page: pageNum,
+            limit: 24,
+          });
         }
 
         if (response.success) {
           setInvoices(response.data?.saleInvoices || []);
-          setTotalPage(response.data?.soLuong || 1);
+          setTotalPage(response.data?.totalPages || 1);
         } else {
           console.log(response.error?.message);
         }
@@ -79,7 +76,7 @@ const GoodReceiveNotes = () => {
     };
 
     fetchInvoices();
-  }, [invoiceService, search]);
+  }, [invoiceService, search, pageNum]);
 
   // useEffect(() => {
   //   const fetchSupplierNames = async () => {
@@ -111,20 +108,14 @@ const GoodReceiveNotes = () => {
 
   return (
     <>
-      <div className="flex flex-row-reverse mb-5 py-5">
-        {/* <Button
-          className="bg-green-500 hover:bg-white hover:text-green-500 border-2 border-green-500"
-          asChild
-        >
-          <Link href={`/grn/add-grn`}>Add</Link>
-        </Button> */}
-      </div>
+      <div className="flex flex-row-reverse mb-5 py-5"></div>
 
       <Table>
         <TableCaption>A list of your recent good receive notes</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
+            <TableHead>Customer ID</TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Shipment Type</TableHead>
             <TableHead>Address</TableHead>
@@ -139,6 +130,7 @@ const GoodReceiveNotes = () => {
             <TableRow key={index}>
               <TableCell>{invoice._id}</TableCell>
               <TableCell>{invoice.khachHangId}</TableCell>
+              <TableCell>{invoice.tenKH}</TableCell>
               <TableCell>{invoice.ptVanChuyen}</TableCell>
               <TableCell>{invoice.diaChiDatHang}</TableCell>
               <TableCell>
@@ -166,7 +158,9 @@ const GoodReceiveNotes = () => {
                 {" "}
                 {new Date(invoice.createdAt).toLocaleString()}{" "}
               </TableCell>
-              <TableCell className="text-end">{invoice.tongTien}.00</TableCell>
+              <TableCell className="text-end">
+                {invoice.tongTien.toLocaleString()}đ
+              </TableCell>
               <TableCell className="text-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -183,22 +177,26 @@ const GoodReceiveNotes = () => {
                       >
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          await invoiceService.confirm(invoice._id);
-                          window.location.reload();
-                        }}
-                      >
-                        Accept
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          await invoiceService.cancel(invoice._id);
-                          window.location.reload();
-                        }}
-                      >
-                        Cancel
-                      </DropdownMenuItem>
+                      {invoice.trangThaiDon === "Chờ xác nhận" ? (
+                        <>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              await invoiceService.confirm(invoice._id);
+                            }}
+                          >
+                            Accept
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              await invoiceService.cancel(invoice._id);
+                            }}
+                          >
+                            Cancel
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <></>
+                      )}
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -228,6 +226,15 @@ const GoodReceiveNotes = () => {
                 <PaginationItem
                   key={page}
                   className={page === pageNum ? `bg-yellow` : ``}
+                  style={
+                    page === pageNum
+                      ? {
+                          backgroundColor: "orange",
+                          borderRadius: "5px",
+                          border: "none",
+                        }
+                      : {}
+                  }
                 >
                   <PaginationLink onClick={() => setPageNum(page)}>
                     {page}

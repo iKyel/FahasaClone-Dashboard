@@ -87,6 +87,28 @@ export class UserService {
     return await this.apiUtils.get(`${API_ROUTES.user}/getAccount`);
   }
 
+  public async getUserById(id: string): Promise<
+    ApiResponse<{
+      message: string;
+      user: {
+        _id: string;
+        hoDem: string;
+        ten: string;
+        userName: string;
+        // password: string;
+        email?: string;
+        diaChi: string[];
+        gioiTinh?: string;
+        ngaySinh?: string;
+        loaiTK: string;
+        trangThai: boolean;
+        sdt?: string;
+      };
+    }>
+  > {
+    return await this.apiUtils.get(`${API_ROUTES.user}/get/${id}`);
+  }
+
   public async changePassword(values: {
     oldPassword: string;
     newPassword: string;
