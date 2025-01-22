@@ -107,6 +107,9 @@ const CategoryTree = () => {
         `http://localhost:3412/api/category/editCategoryName/${categoryId}`,
         {
           ten: editingValue.trim(),
+        },
+        {
+          withCredentials: true, 
         }
       );
 
@@ -127,7 +130,10 @@ const CategoryTree = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:3412/api/category/deleteCategory/${categoryId}`
+        `http://localhost:3412/api/category/deleteCategory/${categoryId}`,
+        {
+          withCredentials: true, 
+        }
       );
       setMessage(response.data.message);
       await fetchCategories();
