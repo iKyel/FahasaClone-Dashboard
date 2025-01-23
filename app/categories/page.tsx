@@ -110,7 +110,6 @@ const CategoryTree = () => {
         },
         {
           withCredentials: true,
-        }
       );
 
       setMessage(response.data.message);
