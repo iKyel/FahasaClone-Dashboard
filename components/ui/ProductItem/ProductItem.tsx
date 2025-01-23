@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Label } from "@radix-ui/react-label";
 import { Button } from "../button";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/utils/formatDate";
 
 const ProductItem = ({ product }: { product: ProductDTO }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,12 +82,6 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
                   className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
                   disabled
                 />
-                {/* <Label className="text-gray-500">Cost</Label>
-                <input
-                  value={product.giaNhap}
-                  className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
-                  disabled
-                /> */}
               </div>
               <div className="flex-1 flex flex-col gap-3">
                 <Label className="text-gray-500">Quantity</Label>
@@ -115,13 +110,13 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
               <div className="flex-1 flex flex-col gap-3">
                 <Label className="text-gray-500">Created At</Label>
                 <input
-                  value={product.createdAt}
+                  value={formatDate(product.createdAt || "")}
                   className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
                   disabled
                 />
                 <Label className="text-gray-500">Updated At</Label>
                 <input
-                  value={product.updatedAt}
+                  value={formatDate(product.updatedAt || "")}
                   className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
                   disabled
                 />

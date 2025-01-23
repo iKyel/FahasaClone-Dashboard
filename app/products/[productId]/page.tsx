@@ -17,29 +17,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { CategoryService } from "@/services/category.service";
 import { FeatureService } from "@/services/feature.service";
 import { ProductService } from "@/services/product.service";
 import { CategoryDTO } from "@/types/category.type";
+import { FeatureDTO } from "@/types/feature.type";
 import app from "@/utils/firebase.config";
 import { productFormSchema } from "@/utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
+
+const useCategories = (categoryService: CategoryService) => {
+  return useQuery<CategoryDTO[], Error>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await categoryService.getCategories();
+      return response.data?.categories || [];
+    },
+  });
+};
+
+const useFeatures = (featureService: FeatureService) => {
+  return useQuery<FeatureDTO[], Error>({
+    queryKey: ["features"],
+    queryFn: async () => {
+      const response = await featureService.getAllFeatures();
+      if (response.success && response.data) {
+        return response.data.features.sort((a, b) =>
+          a.ten.localeCompare(b.ten)
+        );
+      }
+      throw new Error(response.error?.message);
+    },
+  });
+};
+
+const useProductDetail = (
+  productId: string,
+  productService: ProductService
+) => {
+  return useQuery({
+    queryKey: ["productDetail", productId], // queryKey
+    queryFn: async () => {
+      // queryFn
+      const response = await productService.getProductDetail(productId);
+      if (response.success && response.data) {
+        return response.data; // Trả về dữ liệu sản phẩm
+      }
+      throw new Error(
+        response.error?.message || "Failed to fetch product detail"
+      );
+    },
+    enabled: !!productId, // Chỉ gọi API khi productId có giá trị
+    staleTime: 60000, // Giữ lại dữ liệu trong 1 phút
+  });
+};
 
 const ProductDetail = () => {
   const router = useRouter();
@@ -53,65 +93,45 @@ const ProductDetail = () => {
   );
   const featureService = useMemo(() => FeatureService.getInstance(), []);
 
-  const [product, setProduct] = useState<{
-    _id: string;
-    tenSP: string;
-    giaBan: number;
-    giaNhap: number;
-    soLuong: number;
-    moTa?: string;
-    trongLuong: number;
-    danhMucId: string;
-    khuyenMai?: number;
-    kichThuoc: {
-      dai: number;
-      rong: number;
-      cao: number;
-    };
-    imageUrl: File | string | null;
-  }>();
+  const { data: categories = [] } = useCategories(categoryService);
+  const { data: featuresSelect = [] } = useFeatures(featureService);
 
-  const [features, setFeatures] = useState<
-    Array<{
-      _id: string;
-      dacTrungId: string;
-      ten: string;
-      giaTri: string;
-    }>
-  >([]);
+  // const [features, setFeatures] = useState<
+  //   Array<{
+  //     _id: string;
+  //     dacTrungId: string;
+  //     ten: string;
+  //     giaTri: string;
+  //   }>
+  // >([]);
 
-  const [featuresSelect, setFeaturesSelect] = useState<
-    {
-      _id: string;
-      ten: string;
-      tenTruyVan: string;
-      truongLoc: boolean;
-    }[]
-  >([]);
-
-  const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const params = useParams();
   const productId = params.productId as string;
+
+  const {
+    data: productDetail,
+    isLoading,
+    error,
+  } = useProductDetail(productId, productService);
 
   const form = useForm<z.infer<typeof productFormSchema>>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      tenSP: product?.tenSP ?? "",
-      giaBan: product?.giaBan ?? 1,
-      // giaNhap: product?.giaNhap ?? 1,
-      soLuong: product?.soLuong ?? 1,
-      trongLuong: product?.trongLuong ?? 1,
-      kichThuoc: product?.kichThuoc ?? {
+      tenSP: productDetail?.productDetail.tenSP ?? "",
+      giaBan: productDetail?.productDetail.giaBan ?? 1,
+      soLuong: productDetail?.productDetail.soLuong ?? 1,
+      trongLuong: productDetail?.productDetail.trongLuong ?? 1,
+      kichThuoc: productDetail?.productDetail.kichThuoc ?? {
         dai: 1,
         rong: 1,
         cao: 1,
       },
-      khuyenMai: product?.khuyenMai ?? 1,
-      imageUrl: product?.imageUrl ?? null,
-      moTa: product?.moTa ?? "",
-      danhMucId: product?.danhMucId ?? "",
+      khuyenMai: productDetail?.productDetail.khuyenMai ?? 1,
+      imageUrl: productDetail?.productDetail.imageUrl ?? null,
+      moTa: productDetail?.productDetail.moTa ?? "",
+      danhMucId: productDetail?.productDetail.danhMucId ?? "",
       features:
-        features.map((feature) => ({
+        productDetail?.features.map((feature) => ({
           _id: feature.dacTrungId,
           ten: feature.ten,
           giaTri: feature.giaTri,
@@ -122,36 +142,6 @@ const ProductDetail = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { setValue } = form;
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryService.getCategories();
-        setCategories(response.data?.categories || []);
-      } catch (error) {
-        console.error("Error during fetching categories:", error);
-      }
-    };
-
-    fetchCategories();
-  }, [categoryService]);
-
-  useEffect(() => {
-    const fetchFeatures = async () => {
-      try {
-        const response = await featureService.getAllFeatures();
-        if (response.success && response.data) {
-          setFeaturesSelect(response.data.features);
-        } else {
-          console.log(response.error);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchFeatures();
-  }, [featureService]);
 
   useEffect(() => {
     const subscription = form.watch((value) => {
@@ -168,86 +158,55 @@ const ProductDetail = () => {
   }, [form]);
 
   useEffect(() => {
-    const fetchProductDetail = async (id: string) => {
+    if (productDetail) {
+      setValue("tenSP", productDetail.productDetail.tenSP);
+      setValue("giaBan", productDetail.productDetail.giaBan);
+      setValue("soLuong", productDetail.productDetail.soLuong);
+      setValue("trongLuong", productDetail.productDetail.trongLuong);
+      setValue("kichThuoc", productDetail.productDetail.kichThuoc);
+      setValue("khuyenMai", productDetail.productDetail.khuyenMai || 0);
+      setValue("imageUrl", productDetail.productDetail.imageUrl);
+      setValue("moTa", productDetail.productDetail.moTa || "");
+      setValue("danhMucId", productDetail.productDetail.danhMucId);
+      setValue(
+        "features",
+        productDetail.features.map((feature) => ({
+          _id: feature.dacTrungId,
+          tenDT: feature.ten,
+          giaTri: feature.giaTri,
+        }))
+      );
+    }
+  }, [productDetail, setValue]);
+
+  const onSubmit = useCallback(
+    async (values: z.infer<typeof productFormSchema>) => {
       try {
-        const response = await productService.getProductDetail(id);
-        if (response.success && response.data) {
-          const productDetail = response.data.productDetail;
-          setProduct(response.data.productDetail);
-          setFeatures(response.data.features);
-          setValue("tenSP", productDetail.tenSP ?? "");
-          setValue("giaBan", productDetail.giaBan ?? 1);
-          // setValue("giaNhap", productDetail.giaNhap ?? 1);
-          setValue("soLuong", productDetail.soLuong ?? 1);
-          setValue("trongLuong", productDetail.trongLuong ?? 1);
-          setValue(
-            "kichThuoc",
-            productDetail.kichThuoc ?? { dai: 1, rong: 1, cao: 1 }
-          );
-          setValue("khuyenMai", productDetail.khuyenMai ?? 1);
-          setValue("imageUrl", productDetail.imageUrl ?? null);
-          setValue("moTa", productDetail.moTa ?? "");
-          setValue("danhMucId", productDetail.danhMucId ?? "");
-
-          const featuresInProductDetail = response.data.features;
-          // console.log(featuresInProductDetail);
-          setValue(
-            "features",
-            featuresInProductDetail.map((feature) => ({
-              _id: feature.dacTrungId,
-              tenDT: feature.ten,
-              giaTri: feature.giaTri,
-            })) ?? []
-          );
-        } else {
-          console.error(
-            response.error?.message || "Failed to fetch product detail"
-          );
+        if (values.imageUrl instanceof File) {
+          const storage = getStorage(app);
+          const imageRef = ref(storage, `images/${values.imageUrl.name}`);
+          const uploadResult = await uploadBytes(imageRef, values.imageUrl);
+          values.imageUrl = await getDownloadURL(uploadResult.ref);
         }
+
+        const response = await productService.updateProduct(productId, values);
+        toast.success(response.data?.message);
+        router.push("/products");
       } catch (error) {
-        console.log("Error fetching product detail:", error);
+        console.error("Error during updating product:", error);
+        toast.error("Đã xảy ra lỗi, vui lòng thử lại sau!");
       }
-    };
+    },
+    [productId, productService, router]
+  );
 
-    if (productId) {
-      fetchProductDetail(productId);
-    }
-  }, [productService, productId, setValue]);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  const onSubmit = async (values: z.infer<typeof productFormSchema>) => {
-    console.log(values);
-    try {
-      if (values.moTa === null) {
-        values.moTa = "";
-      }
-
-      if (values.imageUrl && values.imageUrl instanceof File) {
-        // Lấy file ảnh từ form
-        const imageFile = values.imageUrl;
-
-        const storage = getStorage(app);
-        // Tạo ref cho file ảnh trong Firebase Storage
-        const imageRef = ref(storage, `images/${imageFile.name}`);
-
-        // Tải ảnh lên Firebase Storage
-        const uploadResult = await uploadBytes(imageRef, imageFile);
-
-        // Lấy URL của ảnh đã tải lên
-        const downloadURL = await getDownloadURL(uploadResult.ref);
-
-        // Cập nhật dữ liệu với URL của ảnh
-        values.imageUrl = downloadURL;
-      }
-
-      const response = await productService.updateProduct(productId, values);
-      toast.success(response.data?.message);
-      router.push("/products");
-    } catch (error) {
-      alert(error);
-      console.error("Error during adding new product:", error);
-      toast.error("Đã xảy ra lỗi, vui lòng thử lại sau!");
-    }
-  };
+  if (error) {
+    return <div>Error</div>;
+  }
 
   return (
     <>
@@ -291,27 +250,6 @@ const ProductDetail = () => {
                   </FormItem>
                 )}
               />
-              {/* <FormField
-                control={form.control}
-                name="giaNhap"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cost</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter quantity"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(Number(e.target.value) || 0)
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              /> */}
-
               <FormField
                 control={form.control}
                 name="soLuong"
@@ -616,7 +554,6 @@ const ProductDetail = () => {
                     </div>
                   ))}
 
-                  {/* Add Feature Button */}
                   <Button
                     type="button"
                     className="bg-blue-500 text-white hover:bg-blue-600"

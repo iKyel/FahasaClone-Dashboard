@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 
 import { SupplierDTO } from "@/types/supplier.type";
@@ -26,54 +26,59 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-// import IsAuth from "@/components/hoc/IsAuth";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+const useSuppliers = () => {
+  const supplierService = useMemo(() => SupplierService.getInstance(), []);
+  return useQuery<SupplierDTO[], Error>({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      const response = await supplierService.getSuppliers();
+      if (response.success) {
+        return response.data?.suppliers || [];
+      }
+      throw new Error(response.error?.message || "Failed to fetch suppliers");
+    },
+  });
+};
+
+const useDeleteSupplier = () => {
+  const queryClient = useQueryClient();
+  const supplierService = useMemo(() => SupplierService.getInstance(), []);
+
+  return useMutation<string, Error, string>({
+    mutationFn: async (id: string) => {
+      const response = await supplierService.deleteSupplier(id);
+      if (!response.success) {
+        throw new Error(response.error?.message);
+      }
+      return id;
+    },
+    onSuccess: (id: string) => {
+      // Cập nhật dữ liệu trong cache
+      queryClient.setQueryData<SupplierDTO[]>(["suppliers"], (oldSuppliers) => {
+        if (oldSuppliers) {
+          return oldSuppliers.filter((supplier) => supplier._id !== id); // Lọc bỏ nhà cung cấp đã xóa
+        }
+        return oldSuppliers; // Trả lại dữ liệu cũ nếu không có
+      });
+      toast.success("Supplier deleted successfully");
+    },
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error ? error.message : "An error occurred";
+      toast.error(message);
+    },
+  });
+};
 
 const Supplier = () => {
-  const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
-  const supplierService = useMemo(() => SupplierService.getInstance(), []);
-  // const { search, searchType } = useContext(SearchContext);
+  const deleteSupplierMutation = useDeleteSupplier();
   const router = useRouter();
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        // let response;
-        // if (search !== "") {
-        //   response = await supplierService.search({
-        //     searchUser: search,
-        //     loaiTK: "NV",
-        //   });
-        // } else {
-        const response = await supplierService.getSuppliers();
-        // }
-        if (response.success && response.data) {
-          setSuppliers(response.data?.suppliers || []);
-        } else {
-          console.error(response.error?.message || "Failed to fetch employees");
-        }
-      } catch (error) {
-        console.error(
-          "An unexpected error occurred while fetching employees:",
-          error
-        );
-      }
-    };
 
-    fetchSuppliers();
-  }, [supplierService]);
-
+  const { data: suppliers = [], error } = useSuppliers();
   const handleDeleteSupplier = async (id: string) => {
-    try {
-      const response = await supplierService.deleteSupplier(id);
-
-      if (response.success) {
-        toast.success(response.data?.message);
-        setSuppliers(response.data?.suppliers || []);
-      } else {
-        console.log(response.error);
-      }
-    } catch (err) {
-      console.log(err);
-    }
+    deleteSupplierMutation.mutate(id);
   };
 
   return (

@@ -23,6 +23,7 @@ import { SupplierDTO } from "@/types/supplier.type";
 
 const EditSupplier = () => {
   const [supplier, setSupplier] = useState<SupplierDTO>();
+  const [isLoading, setIsLoading] = useState(false);
   const supplierService = useMemo(() => SupplierService.getInstance(), []);
   const router = useRouter();
   const form = useForm<z.infer<typeof updateSupplierFormSchema>>({
@@ -67,6 +68,7 @@ const EditSupplier = () => {
     values: z.infer<typeof updateSupplierFormSchema>
   ) => {
     console.log(values);
+    setIsLoading(true);
     try {
       const response = await supplierService.updateSupplier(id, values);
       if (response.success && response.data) {
@@ -79,6 +81,8 @@ const EditSupplier = () => {
     } catch (error) {
       console.error("Error during update supplier:", error);
       toast.error("Đã xảy ra lỗi, vui lòng thử lại sau!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -112,7 +116,9 @@ const EditSupplier = () => {
             asChild
             className="bg-green-500 text-white hover:bg-white hover:text-green-500 border-2 border-green-500"
           >
-            <button type="submit">Submit</button>
+            <button type="submit">
+              {isLoading ? "Submitting..." : "Submit"}
+            </button>
           </Button>
         </form>
       </Form>

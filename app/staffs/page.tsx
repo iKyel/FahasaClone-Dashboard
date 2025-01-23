@@ -17,20 +17,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationEllipsis,
-//   PaginationItem,
-//   PaginationLink,
-//   PaginationNext,
-//   PaginationPrevious,
-// } from "@/components/ui/pagination";
-
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo } from "react";
 import Link from "next/link";
 import { UserService } from "@/services/user.service";
-import { UserDTO } from "@/types/user.type";
 import { LuDot } from "react-icons/lu";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRouter } from "next/navigation";
@@ -48,55 +37,28 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "react-toastify";
-// import IsAuth from "@/components/hoc/IsAuth";
+import useEmployees from "@/hooks/use-employees";
 
 const Staff = () => {
-  const [employees, setEmployees] = useState<UserDTO[]>([]);
+  // const [employees, setEmployees] = useState<UserDTO[]>([]);
   const userService = useMemo(() => UserService.getInstance(), []);
-  const { search, searchType } = useContext(SearchContext);
+  const { search } = useContext(SearchContext);
   const router = useRouter();
 
   const { setStaff } = useContext(StaffContext);
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        let response;
-        if (search !== "") {
-          response = await userService.search({
-            searchUser: search,
-            loaiTK: "NV",
-          });
-        } else {
-          response = await userService.getEmployees();
-        }
-        if (response.success) {
-          setEmployees(response.data?.user || []);
-        } else {
-          console.error(response.error?.message || "Failed to fetch employees");
-        }
-      } catch (error) {
-        console.error(
-          "An unexpected error occurred while fetching employees:",
-          error
-        );
-      }
-    };
-
-    fetchEmployees();
-  }, [userService, search, searchType]);
+  const { employees, setEmployees, loading } = useEmployees(search);
 
   const handleLock = async (id: string) => {
     try {
       const response = await userService.lock(id);
       if (response.success) {
+        toast.success(response.data?.message || "Employee locked successfully");
         setEmployees((prev) =>
           prev.map((employee) =>
-            employee._id === id ? { ...employee, trangThai: false } : employee
+            employee._id === id ? { ...employee, trangThai: !employee.trangThai } : employee
           )
         );
-        toast.success(response.data?.message || "Employee locked successfully");
-        window.location.reload();
       } else {
         console.error(response.error?.message || "Failed to lock employee");
       }
@@ -137,87 +99,94 @@ const Staff = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {employees.map((employee, index) => (
-            <TableRow key={index}>
-              <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{employee.hoDem}</TableCell>
-              <TableCell>{employee.ten}</TableCell>
-              <TableCell>{employee.userName}</TableCell>
-              <TableCell>
-                {employee.diaChi.map((diaChi, id) => (
-                  <div key={id}>
-                    <LuDot className="inline" />
-                    {diaChi}
-                  </div>
-                ))}
-              </TableCell>
-              <TableCell>{employee.email}</TableCell>
-              <TableCell>{employee.gioiTinh}</TableCell>
-              <TableCell>{employee.ngaySinh}</TableCell>
-              <TableCell>{employee.sdt}</TableCell>
-              <TableCell>
-                {employee.trangThai === true ? (
-                  <Button className="bg-green-500 text-white hover:bg-green-500 hover:text-white font-bold px-5 rounded-full">
-                    Active
-                  </Button>
-                ) : (
-                  <Button className="bg-red-500 text-white hover:bg-red-500 hover:text-white font-bold px-5 rounded-full">
-                    Locked
-                  </Button>
-                )}
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="bg-transparent text-black hover:bg-transparent">
-                      <BsThreeDotsVertical />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-36">
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setStaff(employee);
-                          router.push(`/staffs/${employee._id}`);
-                        }}
-                      >
-                        Edit
-                      </DropdownMenuItem>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            {employee.trangThai ? `Lock` : `Unlock`}
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you absolutely sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will
-                              permanently delete your account and remove your
-                              data from our servers.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleLock(employee._id)}
-                            >
-                              Continue
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+          {loading ? (
+            <TableRow>
+              <TableCell colSpan={11} className="text-center">
+                Loading...
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            employees.map((employee, index) => (
+              <TableRow key={employee._id}>
+                <TableCell className="font-medium">{index + 1}</TableCell>
+                <TableCell>{employee.hoDem}</TableCell>
+                <TableCell>{employee.ten}</TableCell>
+                <TableCell>{employee.userName}</TableCell>
+                <TableCell>
+                  {employee.diaChi.map((diaChi, id) => (
+                    <div key={id}>
+                      <LuDot className="inline" />
+                      {diaChi}
+                    </div>
+                  ))}
+                </TableCell>
+                <TableCell>{employee.email}</TableCell>
+                <TableCell>{employee.gioiTinh}</TableCell>
+                <TableCell>{employee.ngaySinh}</TableCell>
+                <TableCell>{employee.sdt}</TableCell>
+                <TableCell>
+                  <Button
+                    className={
+                      employee.trangThai
+                        ? "bg-green-500 rounded-l-full rounded-r-full"
+                        : "bg-red-500 rounded-l-full rounded-r-full"
+                    }
+                  >
+                    {employee.trangThai ? "Active" : "Locked"}
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="bg-transparent text-black hover:bg-transparent">
+                        <BsThreeDotsVertical />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-36">
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setStaff(employee);
+                            router.push(`/staffs/${employee._id}`);
+                          }}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem
+                              onSelect={(e) => e.preventDefault()}
+                            >
+                              {employee.trangThai ? "Lock" : "Unlock"}
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently change the employee status.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleLock(employee._id)}
+                              >
+                                Continue
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { supplierFormSchema } from "@/utils/schema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,32 +21,19 @@ import { SupplierService } from "@/services/supplier.service";
 
 const AddSupplier = () => {
   const supplierService = useMemo(() => SupplierService.getInstance(), []);
-  // const categoryService = useMemo(() => CategoryService.getInstance(), []);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   // const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const form = useForm<z.infer<typeof supplierFormSchema>>({
     resolver: zodResolver(supplierFormSchema),
     defaultValues: {
       ten: "",
-      // danhMucId: "",
     },
   });
 
-  // useEffect(() => {
-  //   const fetchCategories = async () => {
-  //     try {
-  //       const response = await categoryService.getCategories();
-  //       setCategories(response.data?.categories || []);
-  //     } catch (error) {
-  //       console.error("Error during fetching categories:", error);
-  //     }
-  //   };
-
-  //   fetchCategories();
-  // }, [categoryService]);
-
   const onSubmit = async (values: z.infer<typeof supplierFormSchema>) => {
     console.log(values);
+    setIsLoading(true);
     try {
       const response = await supplierService.addSupplier(values);
       console.log(response);
@@ -61,6 +48,8 @@ const AddSupplier = () => {
     } catch (error) {
       console.error("Error during adding new supplier:", error);
       toast.error("Đã xảy ra lỗi, vui lòng thử lại sau!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,7 +75,9 @@ const AddSupplier = () => {
             asChild
             className="bg-green-500 text-white hover:bg-white hover:text-green-500 border-2 border-green-500"
           >
-            <button type="submit">Submit</button>
+            <button type="submit">
+              {isLoading ? "Submitting..." : "Submit"}
+            </button>
           </Button>
         </form>
       </Form>
