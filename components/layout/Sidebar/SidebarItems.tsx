@@ -1,4 +1,4 @@
-import { Container, Home, ShieldCheckIcon, User } from "lucide-react";
+import { Container, ShieldCheckIcon, User } from "lucide-react";
 import {
   FaBook,
   // FaComment,

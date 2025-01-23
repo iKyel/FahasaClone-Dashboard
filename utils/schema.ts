@@ -109,11 +109,12 @@ export const grnFormSchema = z.object({
 });
 
 export const updateGrnFormSchema = z.object({
+  supplierId: z.string(),
   ghiChu: z.string(),
   tongTien: z.number(),
   detailPurchaseInvoices: z.array(
     z.object({
-      _id: z.string(),
+      productId: z.string(),
       giaNhap: z.number(),
       soLuong: z.number(),
       thanhTien: z.number(),

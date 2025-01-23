@@ -16,6 +16,15 @@ import { toast } from "react-toastify";
 import { z } from "zod";
 import { GoodReceiveNotesService } from "@/services/grn.service";
 import { useParams, useRouter } from "next/navigation";
+import {
+  Select,
+  SelectItem,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SupplierService } from "@/services/supplier.service";
+import { SupplierDTO } from "@/types/supplier.type";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +36,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ProductService } from "@/services/product.service";
 
 const EditGrn = () => {
   const router = useRouter();
 
   const grnService = useMemo(() => GoodReceiveNotesService.getInstance(), []);
+  const supplierService = useMemo(() => SupplierService.getInstance(), []);
+  const productService = useMemo(() => ProductService.getInstance(), []);
+
+  const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
+
+  const [products, setProducts] = useState<{ _id: string; tenSP: string }[]>(
+    []
+  );
 
   const [grnDetail, setGrnDetail] = useState<{
     purchaseInvoice: {
@@ -53,7 +71,6 @@ const EditGrn = () => {
       giaNhap: number;
       imageUrl: string;
     }>;
-    message: string;
   }>();
 
   const params = useParams();
@@ -62,66 +79,99 @@ const EditGrn = () => {
   const form = useForm<z.infer<typeof updateGrnFormSchema>>({
     resolver: zodResolver(updateGrnFormSchema),
     defaultValues: {
+      supplierId: grnDetail?.purchaseInvoice.supplierId || "",
       ghiChu: grnDetail?.purchaseInvoice.ghiChu || "",
       tongTien: grnDetail?.purchaseInvoice.tongTien || 0,
       detailPurchaseInvoices: grnDetail?.detailPurchaseInvoices || [],
     },
   });
 
-  const { setValue } = form;
+  useEffect(() => {
+    if (grnDetail) {
+      form.reset({
+        supplierId: grnDetail.purchaseInvoice.supplierId || "",
+        ghiChu: grnDetail.purchaseInvoice.ghiChu || "",
+        tongTien: grnDetail.purchaseInvoice.tongTien || 0,
+        detailPurchaseInvoices: grnDetail.detailPurchaseInvoices.map(
+          (detail) => ({
+            productId: detail.sanPhamId || "",
+            giaNhap: detail.giaNhap || 0,
+            soLuong: detail.soLuong || 0,
+            thanhTien: detail.thanhTien || 0,
+          })
+        ),
+      });
+    }
+  }, [grnDetail, form]);
 
   useEffect(() => {
-    const fetchGrnDetal = async (id: string) => {
+    const fetchGrnDetail = async (id: string) => {
       try {
         const response = await grnService.getGrnDetails(id);
         if (response.success && response.data) {
-          const purchaseInvoice = response.data.purchaseInvoice;
-          setGrnDetail(response.data);
-          setValue("ghiChu", purchaseInvoice.ghiChu);
-          setValue("tongTien", purchaseInvoice.tongTien);
-          const detailPurchaseInvoices = response.data.detailPurchaseInvoices;
-          setValue(
-            "detailPurchaseInvoices",
-            detailPurchaseInvoices.map((detail) => ({
-              _id: detail._id,
-              giaNhap: detail.giaNhap,
-              soLuong: detail.soLuong,
-              thanhTien: detail.thanhTien,
-            })) ?? []
-          );
+          setGrnDetail({
+            purchaseInvoice: response.data?.purchaseInvoice,
+            detailPurchaseInvoices: response.data?.detailPurchaseInvoices,
+          });
+          form.reset({
+            supplierId: response.data?.purchaseInvoice.supplierId || "",
+            ghiChu: response.data?.purchaseInvoice.ghiChu || "",
+            tongTien: response.data?.purchaseInvoice.tongTien || 0,
+            detailPurchaseInvoices: response.data?.detailPurchaseInvoices.map(
+              (detail) => ({
+                productId: detail.sanPhamId || "",
+                giaNhap: detail.giaNhap || 0,
+                soLuong: detail.soLuong || 0,
+                thanhTien: detail.thanhTien || 0,
+              })
+            ),
+          });
         } else {
-          console.error(
-            response.error?.message || "Failed to fetch product detail"
-          );
+          console.log(response.error);
         }
-      } catch (error) {
-        console.log("Error fetching product detail:", error);
+      } catch (err) {
+        console.log(err);
       }
     };
 
     if (grnId) {
-      fetchGrnDetal(grnId);
+      fetchGrnDetail(grnId);
     }
-  }, [grnService, grnId, setValue]);
+  }, [grnService, grnId, setGrnDetail, form]);
 
-  //   useEffect(() => {
-  //     const fetchProductsList = async () => {
-  //       try {
-  //         const response = await productService.getAllProducts();
-  //         if (response.success) {
-  //           setProducts(
-  //             response.data?.products.sort((a, b) =>
-  //               a.tenSP.localeCompare(b.tenSP)
-  //             ) || []
-  //           );
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching suppliers:", error);
-  //       }
-  //     };
+  useEffect(() => {
+    const fetchProductsList = async () => {
+      try {
+        const response = await productService.getAllProducts();
+        if (response.success) {
+          setProducts(
+            response.data?.products.sort((a, b) =>
+              a.tenSP.localeCompare(b.tenSP)
+            ) || []
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    };
 
-  //     fetchProductsList();
-  //   }, [productService]);
+    fetchProductsList();
+  }, [productService]);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await supplierService.getSuppliers();
+        if (response.success) {
+          setSuppliers(response.data?.suppliers || []);
+        }
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    };
+
+    fetchSuppliers();
+  }, [supplierService]);
 
   const details = form.watch("detailPurchaseInvoices");
 
@@ -133,15 +183,17 @@ const EditGrn = () => {
     form.setValue("tongTien", total);
   }, [details, form]);
 
-  const onSubmit = async (values: z.infer<typeof updateGrnFormSchema>) => {
+  const onSubmit = async (
+    id: string,
+    values: z.infer<typeof updateGrnFormSchema>
+  ) => {
     console.log(values);
     try {
-      const response = await grnService.update(grnId, values);
+      const response = await grnService.update(id, values);
       if (response.success && response.data) {
         toast.success("Sửa hóa đơn nhập kho thành công");
         router.push("/grn");
       } else {
-        toast.error("Lỗi sửa hóa đơn");
         console.log(response.error);
       }
     } catch (error) {
@@ -150,6 +202,9 @@ const EditGrn = () => {
     }
   };
 
+  const handleSubmitWithId = (values: z.infer<typeof updateGrnFormSchema>) =>
+    onSubmit(grnId, values);
+
   return (
     <>
       <div className="flex flex-row mb-5">
@@ -157,11 +212,11 @@ const EditGrn = () => {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(handleSubmitWithId)}>
           {/* Supplier Selection */}
-          {/* <FormField
+          <FormField
             control={form.control}
-            name="purchaseInvoice.supplierId"
+            name="supplierId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Supplier</FormLabel>
@@ -184,7 +239,7 @@ const EditGrn = () => {
                 </FormControl>
               </FormItem>
             )}
-          /> */}
+          />
 
           {/* Notes */}
           <FormField
@@ -227,12 +282,31 @@ const EditGrn = () => {
                       <TableRow key={index}>
                         {/* Product Id */}
                         <TableCell>
-                          <Input
-                            readOnly
-                            value={
-                              grnDetail?.detailPurchaseInvoices[index].tenSP
-                            }
-                          />
+                          <Select
+                            value={detail.productId}
+                            onValueChange={(value) => {
+                              const updatedDetails = [...field.value];
+                              updatedDetails[index] = {
+                                ...updatedDetails[index],
+                                productId: value,
+                              };
+                              field.onChange(updatedDetails);
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select product" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {products.map((product) => (
+                                <SelectItem
+                                  key={product._id}
+                                  value={product._id}
+                                >
+                                  {product.tenSP}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
 
                         <TableCell>
@@ -319,19 +393,19 @@ const EditGrn = () => {
                 </Table>
 
                 {/* Add Feature Button */}
-                {/* <Button
+                <Button
                   type="button"
                   className="bg-blue-500 text-white hover:bg-blue-600"
                   onClick={() => {
                     const updatedDetails = [
                       ...form.getValues("detailPurchaseInvoices"),
-                      { _id: "", giaNhap: 0, soLuong: 0, thanhTien: 0 },
+                      { productId: "", giaNhap: 0, soLuong: 0, thanhTien: 0 },
                     ];
                     form.setValue("detailPurchaseInvoices", updatedDetails);
                   }}
                 >
                   Add Detail
-                </Button> */}
+                </Button>
 
                 <div className="flex flex-row-reverse mt-5 border-t-2 border-b-2 py-5">
                   <div className="w-1/3 flex flex-col gap-4">

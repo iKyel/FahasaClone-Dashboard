@@ -39,7 +39,7 @@ const GrnDetails = () => {
       thanhTien: number;
       sanPhamId: string;
       tenSP: string;
-      giaNhap: string;
+      giaNhap: number;
       imageUrl: string;
     }>;
   }>();
@@ -120,7 +120,8 @@ const GrnDetails = () => {
                 <>
                   <p className="bg-blue-200 text-blue-700 font-semibold rounded-l-2xl rounded-r-2xl p-1 flex items-center justify-center gap-1">
                     Processing <TbReload />
-                  </p>2
+                  </p>
+                  2
                 </>
               ) : grnDetail.purchaseInvoice.trangThaiDon === "Hoàn thành" ? (
                 <>

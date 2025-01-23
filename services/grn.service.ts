@@ -53,11 +53,11 @@ export class GoodReceiveNotesService {
   public async update(
     id: string,
     values: {
+      supplierId: string;
       ghiChu: string;
       tongTien: number;
-
       detailPurchaseInvoices: Array<{
-        _id: string;
+        productId: string;
         giaNhap: number;
         soLuong: number;
         thanhTien: number;
