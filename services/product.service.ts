@@ -58,6 +58,16 @@ export class ProductService {
     return await this.apiUtils.get(`${API_ROUTES.product}/getProducts`, values);
   }
 
+  public async getAllProducts(): Promise<
+    ApiResponse<{
+      message: string;
+      products: Array<{ _id: string; tenSP: string }>;
+      totalPage: number;
+    }>
+  > {
+    return await this.apiUtils.get(`${API_ROUTES.product}/getAllProducts`);
+  }
+
   public async searchProducts(values: {
     searchName: string;
     pageNum: number;
@@ -124,7 +134,7 @@ export class ProductService {
     values: {
       tenSP: string;
       giaBan: number;
-      giaNhap: number;
+      // giaNhap: number;
       soLuong: number;
       trongLuong: number;
       kichThuoc: {

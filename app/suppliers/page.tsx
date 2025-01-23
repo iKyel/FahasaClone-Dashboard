@@ -11,30 +11,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// import {
-//   Pagination,
-//   PaginationContent,
-//   PaginationEllipsis,
-//   PaginationItem,
-//   PaginationLink,
-//   PaginationNext,
-//   PaginationPrevious,
-// } from "@/components/ui/pagination";
-
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-import SearchContext from "@/contexts/SearchContext";
 
 import { SupplierDTO } from "@/types/supplier.type";
 import { SupplierService } from "@/services/supplier.service";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 // import IsAuth from "@/components/hoc/IsAuth";
 
 const Supplier = () => {
   const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
   const supplierService = useMemo(() => SupplierService.getInstance(), []);
-  const { search, searchType } = useContext(SearchContext);
-
+  // const { search, searchType } = useContext(SearchContext);
+  const router = useRouter();
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
@@ -61,7 +59,21 @@ const Supplier = () => {
     };
 
     fetchSuppliers();
-  }, [supplierService, search, searchType]);
+  }, [supplierService]);
+
+  const handleDeleteSupplier = async (id: string) => {
+    try {
+      const response = await supplierService.deleteSupplier(id);
+
+      if (response.success) {
+        toast.success(response.data?.message);
+      } else {
+        console.log(response.error);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <>
@@ -79,7 +91,8 @@ const Supplier = () => {
         <TableHeader>
           <TableRow>
             <TableHead className="w-1/4">ID</TableHead>
-            <TableHead className="w-3/4">Name</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -87,28 +100,35 @@ const Supplier = () => {
             <TableRow key={index}>
               <TableCell className="font-medium">{index + 1}</TableCell>
               <TableCell>{supplier.ten}</TableCell>
+              <TableCell className="text-end">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="bg-transparent text-black hover:bg-transparent">
+                      <BsThreeDotsVertical />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-36">
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push(`/suppliers/${supplier._id}`);
+                        }}
+                      >
+                        View and Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteSupplier(supplier._id)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      {/* <div className="bottom-1 flex justify-center items-center">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious href="#" />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">1</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div> */}
     </>
   );
 };

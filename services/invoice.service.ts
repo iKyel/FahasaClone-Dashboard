@@ -125,6 +125,31 @@ export class InvoiceService {
     }>
   > {
     return await this.apiUtils.patch(
+      `${API_ROUTES.invoice}/comfirmOrder/${id}`
+    );
+  }
+
+  public async complete(id: string): Promise<
+    ApiResponse<{
+      saleInvoices: {
+        orders: Array<{
+          _id: string;
+          khachHangId: string;
+          trangThaiDon: string;
+          ptVanChuyen: string;
+          ptThanhToan: string;
+          ghiChu: string;
+          tongTien: number;
+          diaChiDatHang: string;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        totalOrders: number;
+      };
+      message: string;
+    }>
+  > {
+    return await this.apiUtils.patch(
       `${API_ROUTES.invoice}/completeOrder/${id}`
     );
   }

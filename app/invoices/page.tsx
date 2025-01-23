@@ -45,6 +45,78 @@ const GoodReceiveNotes = () => {
 
   const { search } = useContext(SearchContext);
 
+  const handleConfirmInvoice = async (id: string) => {
+    try {
+      const response = await invoiceService.confirm(id);
+      if (response.success) {
+        // Gọi lại API để cập nhật danh sách invoices
+        const updatedResponse = await invoiceService.getAll({
+          page: pageNum,
+          limit: 24,
+        });
+
+        if (updatedResponse.success) {
+          setInvoices(updatedResponse.data?.saleInvoices || []);
+          console.log("Invoice confirmed successfully!");
+        } else {
+          console.error(updatedResponse.error?.message);
+        }
+      } else {
+        console.error(response.error?.message);
+      }
+    } catch (error) {
+      console.error("Error confirming invoice:", error);
+    }
+  };
+
+  const handleConpleteInvoice = async (id: string) => {
+    try {
+      const response = await invoiceService.complete(id);
+      if (response.success) {
+        // Gọi lại API để cập nhật danh sách invoices
+        const updatedResponse = await invoiceService.getAll({
+          page: pageNum,
+          limit: 24,
+        });
+
+        if (updatedResponse.success) {
+          setInvoices(updatedResponse.data?.saleInvoices || []);
+          console.log("Invoice confirmed successfully!");
+        } else {
+          console.error(updatedResponse.error?.message);
+        }
+      } else {
+        console.error(response.error?.message);
+      }
+    } catch (error) {
+      console.error("Error confirming invoice:", error);
+    }
+  };
+
+  const handleCancelInvoice = async (id: string) => {
+    try {
+      const response = await invoiceService.cancel(id);
+      if (response.success) {
+        // Gọi lại API để cập nhật danh sách invoices
+        const updatedResponse = await invoiceService.getAll({
+          page: pageNum,
+          limit: 24,
+        });
+
+        if (updatedResponse.success) {
+          setInvoices(updatedResponse.data?.saleInvoices || []);
+          console.log("Invoice canceled successfully!");
+        } else {
+          console.error(updatedResponse.error?.message);
+        }
+      } else {
+        console.error(response.error?.message);
+      }
+    } catch (error) {
+      console.error("Error canceling invoice:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
@@ -78,34 +150,6 @@ const GoodReceiveNotes = () => {
     fetchInvoices();
   }, [invoiceService, search, pageNum]);
 
-  // useEffect(() => {
-  //   const fetchSupplierNames = async () => {
-  //     const names: Record<string, string> = {};
-  //     const missingIds = grns
-  //       .map((grn) => grn.nhaCungCapId)
-  //       .filter((id) => !supplierNames[id]); // Lọc các ID chưa có tên
-
-  //     if (missingIds.length === 0) return; // Không cần fetch nếu tất cả đã có
-
-  //     await Promise.all(
-  //       missingIds.map(async (id) => {
-  //         try {
-  //           const response = await supplierService.getSupplierById(id);
-  //           if (response.success) {
-  //             names[id] = response.data?.supplier.ten || "";
-  //           }
-  //         } catch (error) {
-  //           console.error(`Error fetching supplier name for ID ${id}:`, error);
-  //         }
-  //       })
-  //     );
-
-  //     setSupplierNames((prev) => ({ ...prev, ...names }));
-  //   };
-
-  //   fetchSupplierNames();
-  // }, [grns, supplierService, supplierNames]);
-
   return (
     <>
       <div className="flex flex-row-reverse mb-5 py-5"></div>
@@ -135,23 +179,21 @@ const GoodReceiveNotes = () => {
               <TableCell>{invoice.diaChiDatHang}</TableCell>
               <TableCell>
                 {invoice.trangThaiDon === "Chờ xác nhận" ? (
-                  <>
-                    <p className="bg-blue-200 text-blue-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                      Processing <TbReload />
-                    </p>
-                  </>
+                  <p className="bg-blue-200 text-blue-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Processing <TbReload />
+                  </p>
                 ) : invoice.trangThaiDon === "Hoàn thành" ? (
-                  <>
-                    <p className="bg-green-200 text-green-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                      Completed <TbCheck />
-                    </p>
-                  </>
+                  <p className="bg-green-200 text-green-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Completed <TbCheck />
+                  </p>
+                ) : invoice.trangThaiDon === "Đã xác nhận" ? (
+                  <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Canceled <TbLockCancel />
+                  </p>
                 ) : (
-                  <>
-                    <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                      Canceled <TbLockCancel />
-                    </p>
-                  </>
+                  <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Accepted <TbLockCancel />
+                  </p>
                 )}
               </TableCell>
               <TableCell>
@@ -181,14 +223,14 @@ const GoodReceiveNotes = () => {
                         <>
                           <DropdownMenuItem
                             onClick={async () => {
-                              await invoiceService.confirm(invoice._id);
+                              await handleConfirmInvoice(invoice._id);
                             }}
                           >
                             Accept
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={async () => {
-                              await invoiceService.cancel(invoice._id);
+                              await handleCancelInvoice(invoice._id);
                             }}
                           >
                             Cancel
@@ -196,6 +238,15 @@ const GoodReceiveNotes = () => {
                         </>
                       ) : (
                         <></>
+                      )}
+                      {invoice.trangThaiDon === "Đã xác nhận" && (
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            await handleConpleteInvoice(invoice._id);
+                          }}
+                        >
+                          Complete
+                        </DropdownMenuItem>
                       )}
                     </DropdownMenuGroup>
                   </DropdownMenuContent>

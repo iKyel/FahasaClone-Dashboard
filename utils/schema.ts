@@ -88,6 +88,10 @@ export const supplierFormSchema = z.object({
   danhMucId: z.string(),
 });
 
+export const updateSupplierFormSchema = z.object({
+  ten: z.string(),
+});
+
 // ===================================================
 export const grnFormSchema = z.object({
   purchaseInvoice: z.object({
@@ -98,6 +102,20 @@ export const grnFormSchema = z.object({
   detailPurchaseInvoices: z.array(
     z.object({
       productId: z.string(),
+      giaNhap: z.number(),
+      soLuong: z.number(),
+      thanhTien: z.number(),
+    })
+  ),
+});
+
+export const updateGrnFormSchema = z.object({
+  ghiChu: z.string(),
+  tongTien: z.number(),
+  detailPurchaseInvoices: z.array(
+    z.object({
+      _id: z.string(),
+      giaNhap: z.number(),
       soLuong: z.number(),
       thanhTien: z.number(),
     })

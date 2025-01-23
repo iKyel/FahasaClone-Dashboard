@@ -22,6 +22,7 @@ export class GoodReceiveNotesService {
         nhaCungCapId: string;
         nhanVienId: string;
         tenNV: string;
+        tenNCC: string;
         trangThaiDon: string;
         ghiChu: string;
         tongTien: number;
@@ -41,11 +42,44 @@ export class GoodReceiveNotesService {
     };
     detailPurchaseInvoices: Array<{
       productId: string;
+      giaNhap: number;
       soLuong: number;
       thanhTien: number;
     }>;
   }): Promise<ApiResponse<{ message: string }>> {
     return await this.apiUtils.post(`${API_ROUTES.grn}/create`, values);
+  }
+
+  public async update(
+    id: string,
+    values: {
+      ghiChu: string;
+      tongTien: number;
+
+      detailPurchaseInvoices: Array<{
+        _id: string;
+        giaNhap: number;
+        soLuong: number;
+        thanhTien: number;
+      }>;
+    }
+  ): Promise<
+    ApiResponse<{
+      message: string;
+      purchaseInvoice: {
+        supplierId: string;
+        ghiChu: string;
+        tongTien: number;
+      };
+      detailPurchaseInvoices: Array<{
+        productId: string;
+        giaNhap: number;
+        soLuong: number;
+        thanhTien: number;
+      }>;
+    }>
+  > {
+    return await this.apiUtils.put(`${API_ROUTES.grn}/update/${id}`, values);
   }
 
   public async confirm(id: string): Promise<
@@ -96,7 +130,7 @@ export class GoodReceiveNotesService {
         thanhTien: number;
         sanPhamId: string;
         tenSP: string;
-        giaNhap: string;
+        giaNhap: number;
         imageUrl: string;
       }>;
       message: string;
@@ -105,12 +139,18 @@ export class GoodReceiveNotesService {
     return await this.apiUtils.get(`${API_ROUTES.grn}/getDetail/${id}`);
   }
 
-  public async searchGrn(values?: { id: string; pageNum: number }): Promise<
+  public async searchGrn(values?: {
+    id: string;
+    pageNum: number;
+    // limit: 8;
+  }): Promise<
     ApiResponse<{
       purchaseInvoices: Array<{
         _id: string;
         nhaCungCapId: string;
         nhanVienId: string;
+        tenNV: string;
+        tenNCC: string;
         trangThaiDon: string;
         ghiChu: string;
         tongTien: number;

@@ -26,6 +26,7 @@ export default function SidebarComponent() {
       <SidebarContent>
         <SidebarGroup>
           <Image
+            priority
             src={`/assets/logo.png`}
             alt="Logo"
             width={288}

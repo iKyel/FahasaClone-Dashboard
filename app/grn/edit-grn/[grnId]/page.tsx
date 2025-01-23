@@ -8,23 +8,14 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
-import { grnFormSchema } from "@/utils/schema";
+import { updateGrnFormSchema } from "@/utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import { GoodReceiveNotesService } from "@/services/grn.service";
-import { useRouter } from "next/navigation";
-import {
-  Select,
-  SelectItem,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { SupplierService } from "@/services/supplier.service";
-import { SupplierDTO } from "@/types/supplier.type";
+import { useParams, useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,66 +27,101 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ProductService } from "@/services/product.service";
 
-const AddGrn = () => {
+const EditGrn = () => {
   const router = useRouter();
 
   const grnService = useMemo(() => GoodReceiveNotesService.getInstance(), []);
-  const supplierService = useMemo(() => SupplierService.getInstance(), []);
-  const productService = useMemo(() => ProductService.getInstance(), []);
 
-  const [suppliers, setSuppliers] = useState<SupplierDTO[]>([]);
+  const [grnDetail, setGrnDetail] = useState<{
+    purchaseInvoice: {
+      _id: string;
+      nhanVienId: string;
+      trangThaiDon: string;
+      ghiChu: string;
+      tongTien: number;
+      createdAt: string;
+      supplierId: string;
+      ten: string;
+    };
+    detailPurchaseInvoices: Array<{
+      _id: string;
+      soLuong: number;
+      thanhTien: number;
+      sanPhamId: string;
+      tenSP: string;
+      giaNhap: number;
+      imageUrl: string;
+    }>;
+    message: string;
+  }>();
 
-  const [products, setProducts] = useState<{ _id: string; tenSP: string }[]>(
-    []
-  );
+  const params = useParams();
+  const grnId = params.grnId as string;
 
-  const form = useForm<z.infer<typeof grnFormSchema>>({
-    resolver: zodResolver(grnFormSchema),
+  const form = useForm<z.infer<typeof updateGrnFormSchema>>({
+    resolver: zodResolver(updateGrnFormSchema),
     defaultValues: {
-      purchaseInvoice: {
-        supplierId: "",
-        ghiChu: "",
-        tongTien: 0,
-      },
-      detailPurchaseInvoices: [],
+      ghiChu: grnDetail?.purchaseInvoice.ghiChu || "",
+      tongTien: grnDetail?.purchaseInvoice.tongTien || 0,
+      detailPurchaseInvoices: grnDetail?.detailPurchaseInvoices || [],
     },
   });
 
+  const { setValue } = form;
+
   useEffect(() => {
-    const fetchProductsList = async () => {
+    const fetchGrnDetal = async (id: string) => {
       try {
-        const response = await productService.getAllProducts();
-        if (response.success) {
-          setProducts(
-            response.data?.products.sort((a, b) =>
-              a.tenSP.localeCompare(b.tenSP)
-            ) || []
+        const response = await grnService.getGrnDetails(id);
+        if (response.success && response.data) {
+          const purchaseInvoice = response.data.purchaseInvoice;
+          setGrnDetail(response.data);
+          setValue("ghiChu", purchaseInvoice.ghiChu);
+          setValue("tongTien", purchaseInvoice.tongTien);
+          const detailPurchaseInvoices = response.data.detailPurchaseInvoices;
+          setValue(
+            "detailPurchaseInvoices",
+            detailPurchaseInvoices.map((detail) => ({
+              _id: detail._id,
+              giaNhap: detail.giaNhap,
+              soLuong: detail.soLuong,
+              thanhTien: detail.thanhTien,
+            })) ?? []
+          );
+        } else {
+          console.error(
+            response.error?.message || "Failed to fetch product detail"
           );
         }
       } catch (error) {
-        console.error("Error fetching suppliers:", error);
+        console.log("Error fetching product detail:", error);
       }
     };
 
-    fetchProductsList();
-  }, [productService]);
+    if (grnId) {
+      fetchGrnDetal(grnId);
+    }
+  }, [grnService, grnId, setValue]);
 
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        const response = await supplierService.getSuppliers();
-        if (response.success) {
-          setSuppliers(response.data?.suppliers || []);
-        }
-      } catch (error) {
-        console.error("Error fetching suppliers:", error);
-      }
-    };
+  //   useEffect(() => {
+  //     const fetchProductsList = async () => {
+  //       try {
+  //         const response = await productService.getAllProducts();
+  //         if (response.success) {
+  //           setProducts(
+  //             response.data?.products.sort((a, b) =>
+  //               a.tenSP.localeCompare(b.tenSP)
+  //             ) || []
+  //           );
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching suppliers:", error);
+  //       }
+  //     };
 
-    fetchSuppliers();
-  }, [supplierService]);
+  //     fetchProductsList();
+  //   }, [productService]);
 
   const details = form.watch("detailPurchaseInvoices");
 
@@ -104,17 +130,18 @@ const AddGrn = () => {
       (sum, detail) => sum + (detail.thanhTien || 0),
       0
     );
-    form.setValue("purchaseInvoice.tongTien", total);
+    form.setValue("tongTien", total);
   }, [details, form]);
 
-  const onSubmit = async (values: z.infer<typeof grnFormSchema>) => {
+  const onSubmit = async (values: z.infer<typeof updateGrnFormSchema>) => {
     console.log(values);
     try {
-      const response = await grnService.create(values);
+      const response = await grnService.update(grnId, values);
       if (response.success && response.data) {
-        toast.success("Tạo hóa đơn nhập kho thành công");
+        toast.success("Sửa hóa đơn nhập kho thành công");
         router.push("/grn");
       } else {
+        toast.error("Lỗi sửa hóa đơn");
         console.log(response.error);
       }
     } catch (error) {
@@ -132,7 +159,7 @@ const AddGrn = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {/* Supplier Selection */}
-          <FormField
+          {/* <FormField
             control={form.control}
             name="purchaseInvoice.supplierId"
             render={({ field }) => (
@@ -157,12 +184,12 @@ const AddGrn = () => {
                 </FormControl>
               </FormItem>
             )}
-          />
+          /> */}
 
           {/* Notes */}
           <FormField
             control={form.control}
-            name="purchaseInvoice.ghiChu"
+            name="ghiChu"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Notes</FormLabel>
@@ -200,31 +227,12 @@ const AddGrn = () => {
                       <TableRow key={index}>
                         {/* Product Id */}
                         <TableCell>
-                          <Select
-                            value={detail.productId}
-                            onValueChange={(value) => {
-                              const updatedDetails = [...field.value];
-                              updatedDetails[index] = {
-                                ...updatedDetails[index],
-                                productId: value,
-                              };
-                              field.onChange(updatedDetails);
-                            }}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select product" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {products.map((product) => (
-                                <SelectItem
-                                  key={product._id}
-                                  value={product._id}
-                                >
-                                  {product.tenSP}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <Input
+                            readOnly
+                            value={
+                              grnDetail?.detailPurchaseInvoices[index].tenSP
+                            }
+                          />
                         </TableCell>
 
                         <TableCell>
@@ -311,19 +319,19 @@ const AddGrn = () => {
                 </Table>
 
                 {/* Add Feature Button */}
-                <Button
+                {/* <Button
                   type="button"
                   className="bg-blue-500 text-white hover:bg-blue-600"
                   onClick={() => {
                     const updatedDetails = [
                       ...form.getValues("detailPurchaseInvoices"),
-                      { productId: "", giaNhap: 0, soLuong: 0, thanhTien: 0 },
+                      { _id: "", giaNhap: 0, soLuong: 0, thanhTien: 0 },
                     ];
                     form.setValue("detailPurchaseInvoices", updatedDetails);
                   }}
                 >
                   Add Detail
-                </Button>
+                </Button> */}
 
                 <div className="flex flex-row-reverse mt-5 border-t-2 border-b-2 py-5">
                   <div className="w-1/3 flex flex-col gap-4">
@@ -333,9 +341,7 @@ const AddGrn = () => {
                     </div>
                     <div className="flex justify-between font-bold text-gray-500">
                       <div>Total:</div>
-                      <div>
-                        {form.watch("purchaseInvoice.tongTien").toFixed(2)}
-                      </div>
+                      <div>{form.watch("tongTien").toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
@@ -358,4 +364,4 @@ const AddGrn = () => {
   );
 };
 
-export default AddGrn;
+export default EditGrn;

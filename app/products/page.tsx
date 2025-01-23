@@ -161,7 +161,7 @@ const Product = () => {
         </Button>
       </div>
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
+        <TableCaption>A list of your recent products.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>#</TableHead>
@@ -196,7 +196,7 @@ const Product = () => {
                 className="inline w-3"
               />
             </TableHead>
-            <TableHead>
+            {/* <TableHead>
               Cost{" "}
               <ArrowUpDown
                 onClick={() => {
@@ -205,7 +205,7 @@ const Product = () => {
                 }}
                 className="inline w-3"
               />
-            </TableHead>
+            </TableHead> */}
             <TableHead>
               Quantity{" "}
               <ArrowUpDown

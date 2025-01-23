@@ -53,4 +53,28 @@ export class SupplierService {
   > {
     return this.apiUtils.get(`${API_ROUTES.supplier}/get/${id}`);
   }
+
+  public async updateSupplier(
+    id: string,
+    values: { ten: string }
+  ): Promise<
+    ApiResponse<{
+      message: string;
+      supplier: {
+        _id: string;
+        ten: string;
+      };
+    }>
+  > {
+    return await this.apiUtils.put(
+      `${API_ROUTES.supplier}/update/${id}`,
+      values
+    );
+  }
+
+  public async deleteSupplier(
+    id: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return await this.apiUtils.delete(`${API_ROUTES.supplier}/delete/${id}`);
+  }
 }
