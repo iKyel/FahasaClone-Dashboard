@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import ToastProvider from "@/contexts/ToastContext";
 import { StaffProvider } from "@/contexts/StaffContext";
 import { SearchProvider } from "@/contexts/SearchContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +21,8 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -48,25 +51,27 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider>
-          <AppProvider>
-            <StaffProvider>
-              <SearchProvider>
-                <div className="flex min-h-screen">
-                  <div className="w-64">
-                    <SidebarProvider>
-                      <SidebarComponent />
-                    </SidebarProvider>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <AppProvider>
+              <StaffProvider>
+                <SearchProvider>
+                  <div className="flex min-h-screen">
+                    <div className="w-64">
+                      <SidebarProvider>
+                        <SidebarComponent />
+                      </SidebarProvider>
+                    </div>
+                    <div className="flex-1">
+                      <NavbarComponent />
+                      <div className="p-4">{children}</div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <NavbarComponent />
-                    <div className="p-4">{children}</div>
-                  </div>
-                </div>
-              </SearchProvider>
-            </StaffProvider>
-          </AppProvider>
-        </ToastProvider>
+                </SearchProvider>
+              </StaffProvider>
+            </AppProvider>
+          </ToastProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

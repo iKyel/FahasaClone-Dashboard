@@ -24,7 +24,7 @@ import { ProductService } from "@/services/product.service";
 import { CategoryDTO } from "@/types/category.type";
 import { productFormSchema } from "@/utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
@@ -33,73 +33,44 @@ import app from "../../../utils/firebase.config";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FeatureService } from "@/services/feature.service";
+import { useQuery } from "@tanstack/react-query";
+import { FeatureDTO } from "@/types/feature.type";
+import buildCategoryTree from "@/components/ui/ProductItem/CategorySelect";
+import CategoryOption from "@/components/ui/ProductItem/CategoryOption";
 
-interface CategoryNode extends CategoryDTO {
-  children: CategoryNode[];
-}
-
-const buildCategoryTree = (categories: CategoryDTO[]): CategoryNode[] => {
-  const categoryMap = new Map<string, CategoryNode>();
-  const rootNodes: CategoryNode[] = [];
-
-  // Chuyển đổi tất cả danh mục thành các node với mảng children trống
-  categories.forEach((category) => {
-    categoryMap.set(category._id, { ...category, children: [] });
+const useCategories = (categoryService: CategoryService) => {
+  return useQuery<CategoryDTO[], Error>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await categoryService.getCategories();
+      return response.data?.categories || [];
+    },
   });
+};
 
-  // Xây dựng cấu trúc cây
-  categories.forEach((category) => {
-    const node = categoryMap.get(category._id)!;
-    if (category.parentId === null) {
-      rootNodes.push(node);
-    } else {
-      const parentNode = categoryMap.get(category.parentId);
-      if (parentNode) {
-        parentNode.children.push(node);
+const useFeatures = (featureService: FeatureService) => {
+  return useQuery<FeatureDTO[], Error>({
+    queryKey: ["features"],
+    queryFn: async () => {
+      const response = await featureService.getAllFeatures();
+      if (response.success && response.data) {
+        return response.data.features.sort((a, b) =>
+          a.ten.localeCompare(b.ten)
+        );
       }
-    }
+      throw new Error(response.error?.message);
+    },
   });
-
-  return rootNodes;
 };
 
-const CategoryOption = ({
-  category,
-  level = 0,
-}: {
-  category: CategoryNode;
-  level?: number;
-}) => {
-  const paddingLeft = level * 16; // Adjust the multiplier as needed for desired indentation
-
-  return (
-    <>
-      <SelectItem value={category._id} className="w-full">
-        <span className="block" style={{ paddingLeft }}>
-          {category.ten}
-        </span>
-      </SelectItem>
-      {category.children.map((child) => (
-        <CategoryOption key={child._id} category={child} level={level + 1} />
-      ))}
-    </>
-  );
-};
 const AddProduct = () => {
   const router = useRouter();
   const productService = useMemo(() => ProductService.getInstance(), []);
   const categoryService = useMemo(() => CategoryService.getInstance(), []);
   const featureService = useMemo(() => FeatureService.getInstance(), []);
 
-  const [categories, setCategories] = useState<CategoryDTO[]>([]);
-  const [features, setFeatures] = useState<
-    {
-      _id: string;
-      ten: string;
-      tenTruyVan: string;
-      truongLoc: boolean;
-    }[]
-  >([]);
+  const { data: categories = [] } = useCategories(categoryService);
+  const { data: features = [] } = useFeatures(featureService);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -124,38 +95,6 @@ const AddProduct = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryService.getCategories();
-        setCategories(response.data?.categories || []);
-      } catch (error) {
-        console.error("Error during fetching categories:", error);
-      }
-    };
-
-    fetchCategories();
-  }, [categoryService]);
-
-  useEffect(() => {
-    const fetchFeatures = async () => {
-      try {
-        const response = await featureService.getAllFeatures();
-        if (response.success && response.data) {
-          setFeatures(
-            response.data.features.sort((a, b) => a.ten.localeCompare(b.ten))
-          );
-        } else {
-          console.log(response.error);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchFeatures();
-  }, [featureService]);
-
   const onSubmit = async (values: z.infer<typeof productFormSchema>) => {
     console.log(values);
 
@@ -176,23 +115,13 @@ const AddProduct = () => {
       console.log(values);
 
       if (values.imageUrl && values.imageUrl instanceof File) {
-        // Lấy file ảnh từ form
         const imageFile = values.imageUrl;
-
         const storage = getStorage(app);
-        // Tạo ref cho file ảnh trong Firebase Storage
         const imageRef = ref(storage, `images/${imageFile.name}`);
-
-        // Tải ảnh lên Firebase Storage
         const uploadResult = await uploadBytes(imageRef, imageFile);
-
-        // Lấy URL của ảnh đã tải lên
         const downloadURL = await getDownloadURL(uploadResult.ref);
-
-        // Cập nhật dữ liệu với URL của ảnh
         values.imageUrl = downloadURL;
       }
-
       const response = await productService.createProduct(values);
       toast.success(response.data?.message);
       router.push("/products");
@@ -235,17 +164,13 @@ const AddProduct = () => {
                     placeholder="Enter sell price"
                     {...field}
                     onChange={(e) => {
-                      // Lấy giá trị nhập vào
                       const value = e.target.value;
-                      // Xóa tiền tố 0 nếu có
                       const sanitizedValue = value.startsWith("0")
                         ? value.slice(1)
                         : value;
-                      // Cập nhật giá trị
                       field.onChange(Number(sanitizedValue) || 0);
                     }}
                     onInput={(e) => {
-                      // Loại bỏ tiền tố 0 khi gõ
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /^0+/,
                         ""
@@ -257,26 +182,6 @@ const AddProduct = () => {
               </FormItem>
             )}
           />
-          {/* <FormField
-            control={form.control}
-            name="giaNhap"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cost</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="Enter quantity"
-                    {...field}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
           <FormField
             control={form.control}
             name="soLuong"
@@ -311,17 +216,13 @@ const AddProduct = () => {
                     placeholder="Enter quantity"
                     {...field}
                     onChange={(e) => {
-                      // Lấy giá trị nhập vào
                       const value = e.target.value;
-                      // Xóa tiền tố 0 nếu có
                       const sanitizedValue = value.startsWith("0")
                         ? value.slice(1)
                         : value;
-                      // Cập nhật giá trị
                       field.onChange(Number(sanitizedValue) || 0);
                     }}
                     onInput={(e) => {
-                      // Loại bỏ tiền tố 0 khi gõ
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /^0+/,
                         ""
@@ -345,17 +246,13 @@ const AddProduct = () => {
                     placeholder="Enter quantity"
                     {...field}
                     onChange={(e) => {
-                      // Lấy giá trị nhập vào
                       const value = e.target.value;
-                      // Xóa tiền tố 0 nếu có
                       const sanitizedValue = value.startsWith("0")
                         ? value.slice(1)
                         : value;
-                      // Cập nhật giá trị
                       field.onChange(Number(sanitizedValue) || 0);
                     }}
                     onInput={(e) => {
-                      // Loại bỏ tiền tố 0 khi gõ
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /^0+/,
                         ""
@@ -379,17 +276,13 @@ const AddProduct = () => {
                     placeholder="Enter quantity"
                     {...field}
                     onChange={(e) => {
-                      // Lấy giá trị nhập vào
                       const value = e.target.value;
-                      // Xóa tiền tố 0 nếu có
                       const sanitizedValue = value.startsWith("0")
                         ? value.slice(1)
                         : value;
-                      // Cập nhật giá trị
                       field.onChange(Number(sanitizedValue) || 0);
                     }}
                     onInput={(e) => {
-                      // Loại bỏ tiền tố 0 khi gõ
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /^0+/,
                         ""
@@ -413,17 +306,13 @@ const AddProduct = () => {
                     placeholder="Enter quantity"
                     {...field}
                     onChange={(e) => {
-                      // Lấy giá trị nhập vào
                       const value = e.target.value;
-                      // Xóa tiền tố 0 nếu có
                       const sanitizedValue = value.startsWith("0")
                         ? value.slice(1)
                         : value;
-                      // Cập nhật giá trị
                       field.onChange(Number(sanitizedValue) || 0);
                     }}
                     onInput={(e) => {
-                      // Loại bỏ tiền tố 0 khi gõ
                       e.currentTarget.value = e.currentTarget.value.replace(
                         /^0+/,
                         ""
@@ -447,17 +336,13 @@ const AddProduct = () => {
                   {...field}
                   value={field.value ?? 0}
                   onChange={(e) => {
-                    // Lấy giá trị nhập vào
                     const value = e.target.value;
-                    // Xóa tiền tố 0 nếu có
                     const sanitizedValue = value.startsWith("0")
                       ? value.slice(1)
                       : value;
-                    // Cập nhật giá trị
                     field.onChange(Number(sanitizedValue) || 0);
                   }}
                   onInput={(e) => {
-                    // Loại bỏ tiền tố 0 khi gõ
                     e.currentTarget.value = e.currentTarget.value.replace(
                       /^0+/,
                       ""
