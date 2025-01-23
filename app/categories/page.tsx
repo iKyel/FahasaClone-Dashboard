@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ChevronRight, ChevronDown, Plus, Trash2, Edit2 } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface Category {
   _id: string;
@@ -110,14 +111,15 @@ const CategoryTree = () => {
         },
         {
           withCredentials: true,
-        });
+        }
+      );
 
       setMessage(response.data.message);
       await fetchCategories();
       setEditingCategory(null);
       setEditingValue("");
     } catch (error) {
-      console.error("Lỗi khi sửa danh mục:", error);
+      toast.error("Lỗi khi sửa danh mục:");
       setMessage("Sửa danh mục thất bại!");
     }
   };
@@ -137,7 +139,7 @@ const CategoryTree = () => {
       setMessage(response.data.message);
       await fetchCategories();
     } catch (error) {
-      console.error("Lỗi khi xóa danh mục:", error);
+      toast.error("Lỗi khi xóa danh mục");
       setMessage("Xóa danh mục thất bại!");
     }
   };

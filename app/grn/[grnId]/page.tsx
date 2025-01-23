@@ -164,7 +164,9 @@ const GrnDetails = () => {
               {grnDetail.detailPurchaseInvoices.map((detail) => (
                 <TableRow key={detail._id}>
                   <TableCell>{detail.tenSP}</TableCell>
-                  <TableCell>{Number(detail.giaNhap).toFixed(2)}</TableCell>
+                  <TableCell>
+                    {Number(detail.giaNhap).toLocaleString()}Đ
+                  </TableCell>
                   <TableCell>{detail.soLuong}</TableCell>
                   <TableCell>
                     {detail.imageUrl && (
@@ -177,7 +179,7 @@ const GrnDetails = () => {
                       />
                     )}
                   </TableCell>
-                  <TableCell>{detail.thanhTien.toFixed(2)}</TableCell>
+                  <TableCell>{detail.thanhTien.toLocaleString()}Đ</TableCell>
                 </TableRow>
               ))}
               <TableRow>
@@ -188,7 +190,7 @@ const GrnDetails = () => {
                   <strong className="text-lg">Total:</strong>{" "}
                 </TableCell>
                 <TableCell className="text-lg font-bold">
-                  {grnDetail.purchaseInvoice.tongTien.toFixed(2)}
+                  {grnDetail.purchaseInvoice.tongTien.toLocaleString()}Đ
                 </TableCell>
               </TableRow>
             </TableBody>

@@ -31,11 +31,14 @@ export class UserService {
     userName: string;
     password: string;
     loaiTK: string;
-  }): Promise<ApiResponse<{ message: string; user: UserDTO }>> {
-    const response: any = await this.apiUtils.post(`${API_ROUTES.user}/login`, values);
+  }): Promise<ApiResponse<{ message: string; user: UserDTO; token: string }>> {
+    const response: any = await this.apiUtils.post(
+      `${API_ROUTES.user}/login`,
+      values
+    );
     if (response && response.data && response.data.token) {
       console.log(response.data);
-      nookies.set(null, 'token', response.data.token, { path: '/' });
+      nookies.set(null, "token", response.data.token, { path: "/" });
     }
     return response;
   }
@@ -121,7 +124,7 @@ export class UserService {
   }
 
   public async logout() {
-    nookies.destroy(null, 'token', { path: '/' });
+    nookies.destroy(null, "token", { path: "/" });
     return { message: "Đăng xuất thành công" };
   }
 }

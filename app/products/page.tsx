@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ const Product = () => {
   const [sorting, setSorting] = useState<Sorting>("");
   const [sortingOrder, setSortingOrder] = useState<SortingOrder>("asc");
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["customers", search],
     queryFn: async () => {
       const productService = ProductService.getInstance();
@@ -44,7 +44,7 @@ const Product = () => {
           ? await productService.getProducts({ pageNum })
           : await productService.searchProducts({
               searchName: search,
-              pageNum,
+              pageNum: 1,
             });
       if (!response.success) {
         throw new Error(response.error?.message || "Failed to fetch products");
@@ -52,6 +52,10 @@ const Product = () => {
       return response.data;
     },
   });
+
+  useEffect(() => {
+    refetch();
+  }, [pageNum, search, refetch]);
 
   const sortedProducts = useMemo(() => {
     if (!data?.products) return [];
@@ -155,10 +159,6 @@ const Product = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {/* {products.map((product) => (
-            <ProductItem key={product._id} product={product} />
-          ))} */}
-
           {sortedProducts.map((product) => (
             <ProductItem key={product._id} product={product} />
           ))}
@@ -181,7 +181,10 @@ const Product = () => {
                   </PaginationItem>
                 )}
                 <PaginationItem>
-                  <PaginationLink onClick={() => setPageNum(page)}>
+                  <PaginationLink
+                    onClick={() => setPageNum(page)}
+                    className={page === pageNum ? `bg-orange-400` : ""}
+                  >
                     {page}
                   </PaginationLink>
                 </PaginationItem>
@@ -189,9 +192,9 @@ const Product = () => {
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() =>
-                  setPageNum((num) => Math.min(num + 1, data?.totalPage || 1))
-                }
+                onClick={() => {
+                  setPageNum((num) => Math.min(num + 1, data?.totalPage || 1));
+                }}
                 aria-disabled={pageNum === data?.totalPage}
               />
             </PaginationItem>

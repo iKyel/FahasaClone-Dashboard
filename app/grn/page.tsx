@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/table";
 import SearchContext from "@/contexts/SearchContext";
 import { GoodReceiveNotesService } from "@/services/grn.service";
-// import { SupplierService } from "@/services/supplier.service";
 import { GrnDTO } from "@/types/grn.type";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,9 +38,6 @@ import { TbCheck, TbLockCancel, TbReload } from "react-icons/tb";
 const GoodReceiveNotes = () => {
   const router = useRouter();
   const [grns, setGrns] = useState<GrnDTO[]>([]);
-  // const [supplierNames, setSupplierNames] = useState<Record<string, string>>(
-  //   {}
-  // );
   const [pageNum, setPageNum] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
 
@@ -129,7 +125,9 @@ const GoodReceiveNotes = () => {
                   </>
                 )}
               </TableCell>
-              <TableCell className="text-end">{grn.tongTien}</TableCell>
+              <TableCell className="text-end">
+                {grn.tongTien.toLocaleString()}Đ
+              </TableCell>
               <TableCell className="text-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -159,7 +157,6 @@ const GoodReceiveNotes = () => {
                           <DropdownMenuItem
                             onClick={async () => {
                               await grnService.confirm(grn._id);
-                              window.location.reload();
                             }}
                           >
                             Accept
@@ -167,7 +164,6 @@ const GoodReceiveNotes = () => {
                           <DropdownMenuItem
                             onClick={async () => {
                               await grnService.cancel(grn._id);
-                              window.location.reload();
                             }}
                           >
                             Cancel

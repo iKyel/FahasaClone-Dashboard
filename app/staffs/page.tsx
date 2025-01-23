@@ -56,7 +56,9 @@ const Staff = () => {
         toast.success(response.data?.message || "Employee locked successfully");
         setEmployees((prev) =>
           prev.map((employee) =>
-            employee._id === id ? { ...employee, trangThai: !employee.trangThai } : employee
+            employee._id === id
+              ? { ...employee, trangThai: !employee.trangThai }
+              : employee
           )
         );
       } else {
@@ -125,15 +127,15 @@ const Staff = () => {
                 <TableCell>{employee.ngaySinh}</TableCell>
                 <TableCell>{employee.sdt}</TableCell>
                 <TableCell>
-                  <Button
+                  <div
                     className={
                       employee.trangThai
-                        ? "bg-green-500 rounded-l-full rounded-r-full"
-                        : "bg-red-500 rounded-l-full rounded-r-full"
+                        ? "bg-green-500 rounded-l-full rounded-r-full p-2 text-center text-white"
+                        : "bg-red-500 rounded-l-full rounded-r-full p-2 text-center text-white"
                     }
                   >
                     {employee.trangThai ? "Active" : "Locked"}
-                  </Button>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -150,7 +152,7 @@ const Staff = () => {
                             router.push(`/staffs/${employee._id}`);
                           }}
                         >
-                          Edit
+                          View
                         </DropdownMenuItem>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

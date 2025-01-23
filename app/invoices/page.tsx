@@ -227,7 +227,7 @@ const Invoices = () => {
                   {new Date(invoice.createdAt).toLocaleString()}
                 </TableCell>
                 <TableCell className="text-end">
-                  {invoice.tongTien.toLocaleString()}đ
+                  {invoice.tongTien.toLocaleString()}Đ
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -258,13 +258,6 @@ const Invoices = () => {
                               Cancel
                             </DropdownMenuItem>
                           </>
-                        )}
-                        {invoice.trangThaiDon === "Đã xác nhận" && (
-                          <DropdownMenuItem
-                            onClick={() => handleConpleteInvoice(invoice._id)}
-                          >
-                            Complete
-                          </DropdownMenuItem>
                         )}
                       </DropdownMenuGroup>
                     </DropdownMenuContent>
