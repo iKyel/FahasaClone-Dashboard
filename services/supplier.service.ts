@@ -28,7 +28,7 @@ export class SupplierService {
     return this.apiUtils.get(`${API_ROUTES.supplier}/get`);
   }
 
-  public async addSupplier(value: { ten: string; danhMucId: string }): Promise<
+  public async addSupplier(value: { ten: string }): Promise<
     ApiResponse<{
       message: string;
       supplier: {
@@ -72,9 +72,16 @@ export class SupplierService {
     );
   }
 
-  public async deleteSupplier(
-    id: string
-  ): Promise<ApiResponse<{ message: string }>> {
+  public async deleteSupplier(id: string): Promise<
+    ApiResponse<{
+      message: string;
+      suppliers: Array<{
+        _id: string;
+        ten: string;
+        __v: number;
+      }>;
+    }>
+  > {
     return await this.apiUtils.delete(`${API_ROUTES.supplier}/delete/${id}`);
   }
 }

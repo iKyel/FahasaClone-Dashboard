@@ -67,6 +67,7 @@ const Supplier = () => {
 
       if (response.success) {
         toast.success(response.data?.message);
+        setSuppliers(response.data?.suppliers || []);
       } else {
         console.log(response.error);
       }

@@ -85,7 +85,6 @@ export const categoryFormSchema = z.object({
 // Supplier schemas:
 export const supplierFormSchema = z.object({
   ten: z.string(),
-  danhMucId: z.string(),
 });
 
 export const updateSupplierFormSchema = z.object({

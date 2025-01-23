@@ -186,13 +186,13 @@ const GoodReceiveNotes = () => {
                   <p className="bg-green-200 text-green-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
                     Completed <TbCheck />
                   </p>
-                ) : invoice.trangThaiDon === "Đã xác nhận" ? (
+                ) : invoice.trangThaiDon === "Đã hủy" ? (
                   <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
                     Canceled <TbLockCancel />
                   </p>
                 ) : (
-                  <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                    Accepted <TbLockCancel />
+                  <p className="bg-green-200 text-green-400 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Accepted <TbCheck />
                   </p>
                 )}
               </TableCell>
@@ -260,11 +260,10 @@ const GoodReceiveNotes = () => {
       <div className="bottom-1 flex justify-center items-center">
         <Pagination>
           <PaginationContent>
+            {/* Nút Previous */}
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => {
-                  setPageNum((num) => num - 1);
-                }}
+                onClick={() => setPageNum((num) => num - 1)}
                 tabIndex={pageNum <= 1 ? -1 : undefined}
                 aria-disabled={pageNum === 1}
                 className={
@@ -272,30 +271,46 @@ const GoodReceiveNotes = () => {
                 }
               />
             </PaginationItem>
-            {Array.from({ length: totalPage }, (_, index) => index + 1).map(
-              (page) => (
-                <PaginationItem
-                  key={page}
-                  className={page === pageNum ? `bg-yellow` : ``}
-                  style={
-                    page === pageNum
-                      ? {
-                          backgroundColor: "orange",
-                          borderRadius: "5px",
-                          border: "none",
-                        }
-                      : {}
-                  }
-                >
-                  <PaginationLink onClick={() => setPageNum(page)}>
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            )}
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+
+            {/* Hiển thị các trang */}
+            {Array.from({ length: totalPage }, (_, index) => index + 1)
+              .filter((page) => {
+                // Hiển thị trang đầu tiên, trang cuối cùng và 3 trang gần nhất xung quanh trang hiện tại
+                return (
+                  page === 1 ||
+                  page === totalPage ||
+                  (page >= pageNum - 1 && page <= pageNum + 1)
+                );
+              })
+              .map((page, idx, visiblePages) => (
+                <React.Fragment key={page}>
+                  {/* Hiển thị dấu 3 chấm nếu có khoảng cách giữa các trang */}
+                  {idx > 0 && page > visiblePages[idx - 1] + 1 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Hiển thị trang */}
+                  <PaginationItem
+                    style={
+                      page === pageNum
+                        ? {
+                            backgroundColor: "orange",
+                            borderRadius: "5px",
+                            border: "none",
+                          }
+                        : {}
+                    }
+                  >
+                    <PaginationLink onClick={() => setPageNum(page)}>
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                </React.Fragment>
+              ))}
+
+            {/* Nút Next */}
             <PaginationItem>
               <PaginationNext
                 tabIndex={pageNum >= totalPage ? -1 : undefined}
@@ -305,9 +320,7 @@ const GoodReceiveNotes = () => {
                     ? "pointer-events-none opacity-50"
                     : undefined
                 }
-                onClick={() => {
-                  setPageNum((num) => num + 1);
-                }}
+                onClick={() => setPageNum((num) => num + 1)}
               />
             </PaginationItem>
           </PaginationContent>

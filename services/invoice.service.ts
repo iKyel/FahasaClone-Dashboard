@@ -125,7 +125,7 @@ export class InvoiceService {
     }>
   > {
     return await this.apiUtils.patch(
-      `${API_ROUTES.invoice}/comfirmOrder/${id}`
+      `${API_ROUTES.invoice}/confirmOrder/${id}`
     );
   }
 

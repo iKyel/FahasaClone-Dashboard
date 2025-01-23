@@ -96,9 +96,9 @@ const GoodReceiveNotes = () => {
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
-            <TableHead>Supplier</TableHead>
             <TableHead>Staff create</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Supplier</TableHead>
+            <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-end">Total</TableHead>
           </TableRow>
         </TableHeader>

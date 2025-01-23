@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { supplierFormSchema } from "@/utils/schema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,41 +18,32 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { SupplierService } from "@/services/supplier.service";
-import { CategoryDTO } from "@/types/category.type";
-import { CategoryService } from "@/services/category.service";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const AddSupplier = () => {
   const supplierService = useMemo(() => SupplierService.getInstance(), []);
-  const categoryService = useMemo(() => CategoryService.getInstance(), []);
+  // const categoryService = useMemo(() => CategoryService.getInstance(), []);
   const router = useRouter();
-  const [categories, setCategories] = useState<CategoryDTO[]>([]);
+  // const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const form = useForm<z.infer<typeof supplierFormSchema>>({
     resolver: zodResolver(supplierFormSchema),
     defaultValues: {
       ten: "",
-      danhMucId: "",
+      // danhMucId: "",
     },
   });
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await categoryService.getCategories();
-        setCategories(response.data?.categories || []);
-      } catch (error) {
-        console.error("Error during fetching categories:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const response = await categoryService.getCategories();
+  //       setCategories(response.data?.categories || []);
+  //     } catch (error) {
+  //       console.error("Error during fetching categories:", error);
+  //     }
+  //   };
 
-    fetchCategories();
-  }, [categoryService]);
+  //   fetchCategories();
+  // }, [categoryService]);
 
   const onSubmit = async (values: z.infer<typeof supplierFormSchema>) => {
     console.log(values);
@@ -86,34 +77,6 @@ const AddSupplier = () => {
                 <FormLabel>First Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter your first name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="danhMucId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category</FormLabel>
-                <FormControl>
-                  <Select
-                    value={field.value || ""} // Đảm bảo rằng value của Select luôn được cập nhật
-                    onValueChange={(value) => field.onChange(value)} // Sử dụng onValueChange để cập nhật giá trị
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories &&
-                        categories.map((category, index) => (
-                          <SelectItem key={index} value={category._id}>
-                            {category.ten}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
