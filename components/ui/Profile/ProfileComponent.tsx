@@ -46,8 +46,8 @@ const ProfileComponent = () => {
             className="p-2 cursor-pointer hover:bg-orange-300 border-none hover:border-none"
             onClick={async () => {
               const response = await userService.logout();
-              if (response.success && response.data)
-                toast.success(response.data?.message);
+              if (response.message)
+                toast.success(response.message);
               router.push("/login");
             }}
           >
