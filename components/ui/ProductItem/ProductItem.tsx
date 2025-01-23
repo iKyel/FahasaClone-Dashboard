@@ -40,7 +40,7 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
         <TableCell>{product._id}</TableCell>
         <TableCell>{product.tenSP}</TableCell>
         <TableCell>{product.giaBan}</TableCell>
-        <TableCell>{product.giaNhap}</TableCell>
+        {/* <TableCell>{product.giaNhap}</TableCell> */}
         <TableCell>{product.soLuong}</TableCell>
         <TableCell className="flex justify-end items-center">
           <button className="mt-2" onClick={toggleAccordion}>
@@ -57,10 +57,7 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
                   <Image
                     priority
                     unoptimized
-                    // src="https://firebasestorage.googleapis.com/v0/b/bookstore-backend-a40e9.appspot.com/o/images%2Ftham-tu-lung-danh-conan_bia_tap-105.jpg?alt=media&token=37724193-1244-474d-9c33-343ce0cfd364"
                     src={product.imageUrl}
-                    // src="https://firebasestorage.googleapis.com/v0/b/bookstore-backend-a40e9.appspot.com/o/images%2F8935244874389.webp?alt=media&token=1114d5c1-885c-4fea-b17c-c301c716fa3d"
-                    // src="/assets/profile.jpg"
                     alt=""
                     width={400}
                     height={400}
@@ -84,12 +81,12 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
                   className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
                   disabled
                 />
-                <Label className="text-gray-500">Cost</Label>
+                {/* <Label className="text-gray-500">Cost</Label>
                 <input
                   value={product.giaNhap}
                   className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
                   disabled
-                />
+                /> */}
               </div>
               <div className="flex-1 flex flex-col gap-3">
                 <Label className="text-gray-500">Quantity</Label>

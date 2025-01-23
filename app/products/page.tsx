@@ -51,11 +51,12 @@ const Product = () => {
           response = await productService.getProducts({
             pageNum: pageNum,
           });
-        else
+        else {
           response = await productService.searchProducts({
             searchName: search,
             pageNum: pageNum,
           });
+        }
 
         console.log(response.data);
         if (response.success) {
@@ -160,7 +161,7 @@ const Product = () => {
         </Button>
       </div>
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
+        <TableCaption>A list of your recent products.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>#</TableHead>
@@ -195,7 +196,7 @@ const Product = () => {
                 className="inline w-3"
               />
             </TableHead>
-            <TableHead>
+            {/* <TableHead>
               Cost{" "}
               <ArrowUpDown
                 onClick={() => {
@@ -204,7 +205,7 @@ const Product = () => {
                 }}
                 className="inline w-3"
               />
-            </TableHead>
+            </TableHead> */}
             <TableHead>
               Quantity{" "}
               <ArrowUpDown
@@ -227,11 +228,10 @@ const Product = () => {
       <div className="bottom-1 flex justify-center items-center">
         <Pagination>
           <PaginationContent>
+            {/* Nút Previous */}
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => {
-                  setPageNum((num) => num - 1);
-                }}
+                onClick={() => setPageNum((num) => num - 1)}
                 tabIndex={pageNum <= 1 ? -1 : undefined}
                 aria-disabled={pageNum === 1}
                 className={
@@ -239,21 +239,46 @@ const Product = () => {
                 }
               />
             </PaginationItem>
-            {Array.from({ length: totalPage }, (_, index) => index + 1).map(
-              (page) => (
-                <PaginationItem
-                  key={page}
-                  className={page === pageNum ? `bg-yellow` : ``}
-                >
-                  <PaginationLink onClick={() => setPageNum(page)}>
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            )}
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+
+            {/* Hiển thị các trang */}
+            {Array.from({ length: totalPage }, (_, index) => index + 1)
+              .filter((page) => {
+                // Hiển thị trang đầu tiên, trang cuối cùng và 3 trang gần nhất xung quanh trang hiện tại
+                return (
+                  page === 1 ||
+                  page === totalPage ||
+                  (page >= pageNum - 1 && page <= pageNum + 1)
+                );
+              })
+              .map((page, idx, visiblePages) => (
+                <React.Fragment key={page}>
+                  {/* Hiển thị dấu 3 chấm nếu có khoảng cách giữa các trang */}
+                  {idx > 0 && page > visiblePages[idx - 1] + 1 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Hiển thị trang */}
+                  <PaginationItem
+                    style={
+                      page === pageNum
+                        ? {
+                            backgroundColor: "orange",
+                            borderRadius: "5px",
+                            border: "none",
+                          }
+                        : {}
+                    }
+                  >
+                    <PaginationLink onClick={() => setPageNum(page)}>
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                </React.Fragment>
+              ))}
+
+            {/* Nút Next */}
             <PaginationItem>
               <PaginationNext
                 tabIndex={pageNum >= totalPage ? -1 : undefined}
@@ -263,9 +288,7 @@ const Product = () => {
                     ? "pointer-events-none opacity-50"
                     : undefined
                 }
-                onClick={() => {
-                  setPageNum((num) => num + 1);
-                }}
+                onClick={() => setPageNum((num) => num + 1)}
               />
             </PaginationItem>
           </PaginationContent>

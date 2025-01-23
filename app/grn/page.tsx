@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/table";
 import SearchContext from "@/contexts/SearchContext";
 import { GoodReceiveNotesService } from "@/services/grn.service";
-import { SupplierService } from "@/services/supplier.service";
+// import { SupplierService } from "@/services/supplier.service";
 import { GrnDTO } from "@/types/grn.type";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -39,14 +39,14 @@ import { TbCheck, TbLockCancel, TbReload } from "react-icons/tb";
 const GoodReceiveNotes = () => {
   const router = useRouter();
   const [grns, setGrns] = useState<GrnDTO[]>([]);
-  const [supplierNames, setSupplierNames] = useState<Record<string, string>>(
-    {}
-  );
+  // const [supplierNames, setSupplierNames] = useState<Record<string, string>>(
+  //   {}
+  // );
   const [pageNum, setPageNum] = useState<number>(1);
   const [totalPage, setTotalPage] = useState<number>(1);
 
   const grnService = useMemo(() => GoodReceiveNotesService.getInstance(), []);
-  const supplierService = useMemo(() => SupplierService.getInstance(), []);
+  // const supplierService = useMemo(() => SupplierService.getInstance(), []);
 
   const { search } = useContext(SearchContext);
 
@@ -55,13 +55,17 @@ const GoodReceiveNotes = () => {
       try {
         let response;
         if (search) {
-          response = await grnService.searchGrn({ id: search });
+          response = await grnService.searchGrn({
+            id: search,
+            pageNum: pageNum,
+          });
         } else {
-          response = await grnService.getAll();
+          response = await grnService.getAll({ pageNum: pageNum });
         }
 
         if (response.success) {
           setGrns(response.data?.purchaseInvoices || []);
+          setTotalPage(response.data?.totalPage || 1);
         } else {
           console.log(response.error?.message);
         }
@@ -74,35 +78,7 @@ const GoodReceiveNotes = () => {
     };
 
     fetchGrns();
-  }, [grnService, search]);
-
-  useEffect(() => {
-    const fetchSupplierNames = async () => {
-      const names: Record<string, string> = {};
-      const missingIds = grns
-        .map((grn) => grn.nhaCungCapId)
-        .filter((id) => !supplierNames[id]); // Lọc các ID chưa có tên
-
-      if (missingIds.length === 0) return; // Không cần fetch nếu tất cả đã có
-
-      await Promise.all(
-        missingIds.map(async (id) => {
-          try {
-            const response = await supplierService.getSupplierById(id);
-            if (response.success) {
-              names[id] = response.data?.supplier.ten || "";
-            }
-          } catch (error) {
-            console.error(`Error fetching supplier name for ID ${id}:`, error);
-          }
-        })
-      );
-
-      setSupplierNames((prev) => ({ ...prev, ...names }));
-    };
-
-    fetchSupplierNames();
-  }, [grns, supplierService, supplierNames]);
+  }, [grnService, search, pageNum]);
 
   return (
     <>
@@ -120,9 +96,9 @@ const GoodReceiveNotes = () => {
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
-            <TableHead>Supplier</TableHead>
             <TableHead>Staff create</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Supplier</TableHead>
+            <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-end">Total</TableHead>
           </TableRow>
         </TableHeader>
@@ -130,10 +106,8 @@ const GoodReceiveNotes = () => {
           {grns.map((grn, index) => (
             <TableRow key={index}>
               <TableCell>{grn._id}</TableCell>
-              <TableCell>
-                {supplierNames[grn.nhaCungCapId] || "Loading..."}
-              </TableCell>
-              <TableCell>{grn.nhanVienId}</TableCell>
+              <TableCell>{grn.tenNV}</TableCell>
+              <TableCell>{grn.tenNCC}</TableCell>
               <TableCell>
                 {grn.trangThaiDon === "Chờ xác nhận" ? (
                   <>
@@ -172,8 +146,16 @@ const GoodReceiveNotes = () => {
                       >
                         View
                       </DropdownMenuItem>
+
                       {grn.trangThaiDon === "Chờ xác nhận" ? (
                         <>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              router.push(`/grn/edit-grn/${grn._id}`);
+                            }}
+                          >
+                            Edit
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={async () => {
                               await grnService.confirm(grn._id);
@@ -221,6 +203,15 @@ const GoodReceiveNotes = () => {
                 <PaginationItem
                   key={page}
                   className={page === pageNum ? `bg-yellow` : ``}
+                  style={
+                    page === pageNum
+                      ? {
+                          backgroundColor: "orange",
+                          borderRadius: "5px",
+                          border: "none",
+                        }
+                      : {}
+                  }
                 >
                   <PaginationLink onClick={() => setPageNum(page)}>
                     {page}

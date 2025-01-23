@@ -1,6 +1,7 @@
 export interface InvoiceDTO {
   _id: string;
   khachHangId: string;
+  tenKH: string;
   trangThaiDon: string;
   ptVanChuyen: string;
   ptThanhToan: string;

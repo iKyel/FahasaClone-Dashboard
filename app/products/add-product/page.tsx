@@ -108,7 +108,7 @@ const AddProduct = () => {
     defaultValues: {
       tenSP: "",
       giaBan: 1,
-      giaNhap: 1,
+      // giaNhap: 1,
       soLuong: 0,
       trongLuong: 350,
       kichThuoc: {
@@ -142,7 +142,9 @@ const AddProduct = () => {
       try {
         const response = await featureService.getAllFeatures();
         if (response.success && response.data) {
-          setFeatures(response.data.features.sort((a, b) => a.ten.localeCompare(b.ten)));
+          setFeatures(
+            response.data.features.sort((a, b) => a.ten.localeCompare(b.ten))
+          );
         } else {
           console.log(response.error);
         }
@@ -155,6 +157,8 @@ const AddProduct = () => {
   }, [featureService]);
 
   const onSubmit = async (values: z.infer<typeof productFormSchema>) => {
+    console.log(values);
+
     try {
       if (values.moTa === null) {
         values.moTa = "";
@@ -228,18 +232,32 @@ const AddProduct = () => {
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="Enter quantity"
+                    placeholder="Enter sell price"
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      // Lấy giá trị nhập vào
+                      const value = e.target.value;
+                      // Xóa tiền tố 0 nếu có
+                      const sanitizedValue = value.startsWith("0")
+                        ? value.slice(1)
+                        : value;
+                      // Cập nhật giá trị
+                      field.onChange(Number(sanitizedValue) || 0);
+                    }}
+                    onInput={(e) => {
+                      // Loại bỏ tiền tố 0 khi gõ
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /^0+/,
+                        ""
+                      );
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
+          {/* <FormField
             control={form.control}
             name="giaNhap"
             render={({ field }) => (
@@ -258,7 +276,7 @@ const AddProduct = () => {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
           <FormField
             control={form.control}
             name="soLuong"
@@ -268,6 +286,7 @@ const AddProduct = () => {
                 <FormControl>
                   <Input
                     type="number"
+                    hidden
                     placeholder="Enter quantity"
                     {...field}
                     onChange={(e) =>
@@ -291,9 +310,23 @@ const AddProduct = () => {
                     type="number"
                     placeholder="Enter quantity"
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      // Lấy giá trị nhập vào
+                      const value = e.target.value;
+                      // Xóa tiền tố 0 nếu có
+                      const sanitizedValue = value.startsWith("0")
+                        ? value.slice(1)
+                        : value;
+                      // Cập nhật giá trị
+                      field.onChange(Number(sanitizedValue) || 0);
+                    }}
+                    onInput={(e) => {
+                      // Loại bỏ tiền tố 0 khi gõ
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /^0+/,
+                        ""
+                      );
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -311,9 +344,23 @@ const AddProduct = () => {
                     type="number"
                     placeholder="Enter quantity"
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      // Lấy giá trị nhập vào
+                      const value = e.target.value;
+                      // Xóa tiền tố 0 nếu có
+                      const sanitizedValue = value.startsWith("0")
+                        ? value.slice(1)
+                        : value;
+                      // Cập nhật giá trị
+                      field.onChange(Number(sanitizedValue) || 0);
+                    }}
+                    onInput={(e) => {
+                      // Loại bỏ tiền tố 0 khi gõ
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /^0+/,
+                        ""
+                      );
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -331,9 +378,23 @@ const AddProduct = () => {
                     type="number"
                     placeholder="Enter quantity"
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      // Lấy giá trị nhập vào
+                      const value = e.target.value;
+                      // Xóa tiền tố 0 nếu có
+                      const sanitizedValue = value.startsWith("0")
+                        ? value.slice(1)
+                        : value;
+                      // Cập nhật giá trị
+                      field.onChange(Number(sanitizedValue) || 0);
+                    }}
+                    onInput={(e) => {
+                      // Loại bỏ tiền tố 0 khi gõ
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /^0+/,
+                        ""
+                      );
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -351,9 +412,23 @@ const AddProduct = () => {
                     type="number"
                     placeholder="Enter quantity"
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      // Lấy giá trị nhập vào
+                      const value = e.target.value;
+                      // Xóa tiền tố 0 nếu có
+                      const sanitizedValue = value.startsWith("0")
+                        ? value.slice(1)
+                        : value;
+                      // Cập nhật giá trị
+                      field.onChange(Number(sanitizedValue) || 0);
+                    }}
+                    onInput={(e) => {
+                      // Loại bỏ tiền tố 0 khi gõ
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /^0+/,
+                        ""
+                      );
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -371,7 +446,23 @@ const AddProduct = () => {
                   placeholder="Enter quantity"
                   {...field}
                   value={field.value ?? 0}
-                  onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                  onChange={(e) => {
+                    // Lấy giá trị nhập vào
+                    const value = e.target.value;
+                    // Xóa tiền tố 0 nếu có
+                    const sanitizedValue = value.startsWith("0")
+                      ? value.slice(1)
+                      : value;
+                    // Cập nhật giá trị
+                    field.onChange(Number(sanitizedValue) || 0);
+                  }}
+                  onInput={(e) => {
+                    // Loại bỏ tiền tố 0 khi gõ
+                    e.currentTarget.value = e.currentTarget.value.replace(
+                      /^0+/,
+                      ""
+                    );
+                  }}
                 />
 
                 <FormMessage />

@@ -15,13 +15,13 @@ export class InvoiceService {
     return this.instance;
   }
 
-  public async getAll(): Promise<
+  public async getAll(values?: { page: number; limit?: number }): Promise<
     ApiResponse<{
       message: string;
-      soLuong: number;
       saleInvoices: Array<{
         _id: string;
         khachHangId: string;
+        tenKH: string;
         trangThaiDon: string;
         ptVanChuyen: string;
         ptThanhToan: string;
@@ -31,19 +31,29 @@ export class InvoiceService {
         createdAt: string;
         updatedAt: string;
       }>;
+      totalOrders: number;
+      totalPages: number;
+      currentPage: number;
     }>
   > {
-    return await this.apiUtils.get(`${API_ROUTES.invoice}/staffGetSaleInvokes`);
+    return await this.apiUtils.get(
+      `${API_ROUTES.invoice}/staffGetSaleInvokes`,
+      values
+    );
   }
 
-  public async searchInvoice(values?: {
-    id: string;
-    pageNum?: number;
-  }): Promise<
+  public async searchInvoice(
+    id: string,
+    values?: {
+      page: number;
+      limit?: number;
+    }
+  ): Promise<
     ApiResponse<{
       saleInvoices: Array<{
         _id: string;
         khachHangId: string;
+        tenKH: string;
         trangThaiDon: string;
         ptVanChuyen: string;
         ptThanhToan: string;
@@ -53,12 +63,14 @@ export class InvoiceService {
         createdAt: string;
         updatedAt: string;
       }>;
-      soLuong: number;
+      totalPages: number;
+      totalOrders: number;
+      currentPage: number;
       message: string;
     }>
   > {
     return await this.apiUtils.get(
-      `${API_ROUTES.invoice}/findSaleInvoices`,
+      `${API_ROUTES.invoice}/findSaleInvoices/${id}`,
       values
     );
   }
@@ -88,11 +100,36 @@ export class InvoiceService {
     }>
   > {
     return await this.apiUtils.get(
-      `${API_ROUTES.invoice}/getSaleInvokesById/${id}`
+      `${API_ROUTES.invoice}/getSaleInvoikeDetail/${id}`
     );
   }
 
   public async confirm(id: string): Promise<
+    ApiResponse<{
+      saleInvoices: {
+        orders: Array<{
+          _id: string;
+          khachHangId: string;
+          trangThaiDon: string;
+          ptVanChuyen: string;
+          ptThanhToan: string;
+          ghiChu: string;
+          tongTien: number;
+          diaChiDatHang: string;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        totalOrders: number;
+      };
+      message: string;
+    }>
+  > {
+    return await this.apiUtils.patch(
+      `${API_ROUTES.invoice}/confirmOrder/${id}`
+    );
+  }
+
+  public async complete(id: string): Promise<
     ApiResponse<{
       saleInvoices: {
         orders: Array<{
@@ -137,6 +174,6 @@ export class InvoiceService {
       message: string;
     }>
   > {
-    return await this.apiUtils.patch(`${API_ROUTES.grn}/confirm/${id}`);
+    return await this.apiUtils.patch(`${API_ROUTES.invoice}/cancelOrder/${id}`);
   }
 }

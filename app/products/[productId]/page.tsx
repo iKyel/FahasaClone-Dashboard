@@ -98,7 +98,7 @@ const ProductDetail = () => {
     defaultValues: {
       tenSP: product?.tenSP ?? "",
       giaBan: product?.giaBan ?? 1,
-      giaNhap: product?.giaNhap ?? 1,
+      // giaNhap: product?.giaNhap ?? 1,
       soLuong: product?.soLuong ?? 1,
       trongLuong: product?.trongLuong ?? 1,
       kichThuoc: product?.kichThuoc ?? {
@@ -177,7 +177,7 @@ const ProductDetail = () => {
           setFeatures(response.data.features);
           setValue("tenSP", productDetail.tenSP ?? "");
           setValue("giaBan", productDetail.giaBan ?? 1);
-          setValue("giaNhap", productDetail.giaNhap ?? 1);
+          // setValue("giaNhap", productDetail.giaNhap ?? 1);
           setValue("soLuong", productDetail.soLuong ?? 1);
           setValue("trongLuong", productDetail.trongLuong ?? 1);
           setValue(
@@ -291,7 +291,7 @@ const ProductDetail = () => {
                   </FormItem>
                 )}
               />
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="giaNhap"
                 render={({ field }) => (
@@ -310,7 +310,7 @@ const ProductDetail = () => {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -348,6 +348,46 @@ const ProductDetail = () => {
                         }
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Upload Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            field.onChange(e.target.files[0]); // Store the first selected file
+                            const previewUrl = URL.createObjectURL(
+                              e.target.files[0]
+                            ); // Create a preview URL
+                            setImagePreview(previewUrl); // Set the preview URL
+                          } else {
+                            field.onChange(null); // Clear the field if no file is selected
+                            setImagePreview(null); // Clear the preview
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    {imagePreview && (
+                      <div className="mt-2">
+                        <Image
+                          priority
+                          src={imagePreview}
+                          alt="Selected Image"
+                          width={100}
+                          height={100}
+                          style={{ objectFit: "cover" }}
+                        />
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -430,46 +470,6 @@ const ProductDetail = () => {
                       }
                     />
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Upload Image</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files.length > 0) {
-                            field.onChange(e.target.files[0]); // Store the first selected file
-                            const previewUrl = URL.createObjectURL(
-                              e.target.files[0]
-                            ); // Create a preview URL
-                            setImagePreview(previewUrl); // Set the preview URL
-                          } else {
-                            field.onChange(null); // Clear the field if no file is selected
-                            setImagePreview(null); // Clear the preview
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    {imagePreview && (
-                      <div className="mt-2">
-                        <Image
-                          priority
-                          src={imagePreview}
-                          alt="Selected Image"
-                          width={100} // Specify width
-                          height={100} // Specify height
-                          style={{ objectFit: "cover" }} // Adjust styling
-                        />
-                      </div>
-                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -604,7 +604,7 @@ const ProductDetail = () => {
                       {/* Remove Button */}
                       <Button
                         type="button"
-                        className="text-red-500 hover:text-white bg-white hover:bg-red-500 border border-red-500 rounded"
+                        className="text-red-500 hover:text-white bg-white hover:bg-red-500 border border-red-500 rounded mt-5"
                         onClick={() => {
                           const updatedFeatures = [...field.value];
                           updatedFeatures.splice(index, 1); // Xóa feature tại index hiện tại

@@ -109,8 +109,7 @@ const CategoryTree = () => {
           ten: editingValue.trim(),
         },
         {
-          withCredentials: true, 
-        }
+          withCredentials: true,
       );
 
       setMessage(response.data.message);
@@ -132,7 +131,7 @@ const CategoryTree = () => {
       const response = await axios.delete(
         `http://localhost:3412/api/category/deleteCategory/${categoryId}`,
         {
-          withCredentials: true, 
+          withCredentials: true,
         }
       );
       setMessage(response.data.message);

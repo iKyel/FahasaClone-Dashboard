@@ -53,7 +53,7 @@ export const changePasswordFormSchema = z.object({
 export const productFormSchema = z.object({
   tenSP: z.string().min(3),
   giaBan: z.number().positive(),
-  giaNhap: z.number().positive(),
+  // giaNhap: z.number().positive(),
   soLuong: z.number(),
   trongLuong: z.number().positive(),
   kichThuoc: z.object({
@@ -85,7 +85,10 @@ export const categoryFormSchema = z.object({
 // Supplier schemas:
 export const supplierFormSchema = z.object({
   ten: z.string(),
-  danhMucId: z.string(),
+});
+
+export const updateSupplierFormSchema = z.object({
+  ten: z.string(),
 });
 
 // ===================================================
@@ -98,6 +101,21 @@ export const grnFormSchema = z.object({
   detailPurchaseInvoices: z.array(
     z.object({
       productId: z.string(),
+      giaNhap: z.number(),
+      soLuong: z.number(),
+      thanhTien: z.number(),
+    })
+  ),
+});
+
+export const updateGrnFormSchema = z.object({
+  supplierId: z.string(),
+  ghiChu: z.string(),
+  tongTien: z.number(),
+  detailPurchaseInvoices: z.array(
+    z.object({
+      productId: z.string(),
+      giaNhap: z.number(),
       soLuong: z.number(),
       thanhTien: z.number(),
     })

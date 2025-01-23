@@ -29,12 +29,10 @@ import {
 import SearchContext from "@/contexts/SearchContext";
 import { InvoiceService } from "@/services/invoice.service";
 import { InvoiceDTO } from "@/types/invoice.type";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { TbCheck, TbLockCancel, TbReload } from "react-icons/tb";
-import page from "../page";
 
 const GoodReceiveNotes = () => {
   const router = useRouter();
@@ -47,26 +45,97 @@ const GoodReceiveNotes = () => {
 
   const { search } = useContext(SearchContext);
 
+  const handleConfirmInvoice = async (id: string) => {
+    try {
+      const response = await invoiceService.confirm(id);
+      if (response.success) {
+        // Gọi lại API để cập nhật danh sách invoices
+        const updatedResponse = await invoiceService.getAll({
+          page: pageNum,
+          limit: 24,
+        });
+
+        if (updatedResponse.success) {
+          setInvoices(updatedResponse.data?.saleInvoices || []);
+          console.log("Invoice confirmed successfully!");
+        } else {
+          console.error(updatedResponse.error?.message);
+        }
+      } else {
+        console.error(response.error?.message);
+      }
+    } catch (error) {
+      console.error("Error confirming invoice:", error);
+    }
+  };
+
+  const handleConpleteInvoice = async (id: string) => {
+    try {
+      const response = await invoiceService.complete(id);
+      if (response.success) {
+        // Gọi lại API để cập nhật danh sách invoices
+        const updatedResponse = await invoiceService.getAll({
+          page: pageNum,
+          limit: 24,
+        });
+
+        if (updatedResponse.success) {
+          setInvoices(updatedResponse.data?.saleInvoices || []);
+          console.log("Invoice confirmed successfully!");
+        } else {
+          console.error(updatedResponse.error?.message);
+        }
+      } else {
+        console.error(response.error?.message);
+      }
+    } catch (error) {
+      console.error("Error confirming invoice:", error);
+    }
+  };
+
+  const handleCancelInvoice = async (id: string) => {
+    try {
+      const response = await invoiceService.cancel(id);
+      if (response.success) {
+        // Gọi lại API để cập nhật danh sách invoices
+        const updatedResponse = await invoiceService.getAll({
+          page: pageNum,
+          limit: 24,
+        });
+
+        if (updatedResponse.success) {
+          setInvoices(updatedResponse.data?.saleInvoices || []);
+          console.log("Invoice canceled successfully!");
+        } else {
+          console.error(updatedResponse.error?.message);
+        }
+      } else {
+        console.error(response.error?.message);
+      }
+    } catch (error) {
+      console.error("Error canceling invoice:", error);
+    }
+  };
+
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
         let response;
-        if (search) {
-          if (pageNum === 1) {
-            response = await invoiceService.searchInvoice({ id: search });
-          } else {
-            response = await invoiceService.searchInvoice({
-              id: search,
-              pageNum: pageNum,
-            });
-          }
+        if (search && search !== "") {
+          response = await invoiceService.searchInvoice(search, {
+            page: pageNum,
+            limit: 24,
+          });
         } else {
-          response = await invoiceService.getAll();
+          response = await invoiceService.getAll({
+            page: pageNum,
+            limit: 24,
+          });
         }
 
         if (response.success) {
           setInvoices(response.data?.saleInvoices || []);
-          setTotalPage(response.data?.soLuong || 1);
+          setTotalPage(response.data?.totalPages || 1);
         } else {
           console.log(response.error?.message);
         }
@@ -79,52 +148,18 @@ const GoodReceiveNotes = () => {
     };
 
     fetchInvoices();
-  }, [invoiceService, search]);
-
-  // useEffect(() => {
-  //   const fetchSupplierNames = async () => {
-  //     const names: Record<string, string> = {};
-  //     const missingIds = grns
-  //       .map((grn) => grn.nhaCungCapId)
-  //       .filter((id) => !supplierNames[id]); // Lọc các ID chưa có tên
-
-  //     if (missingIds.length === 0) return; // Không cần fetch nếu tất cả đã có
-
-  //     await Promise.all(
-  //       missingIds.map(async (id) => {
-  //         try {
-  //           const response = await supplierService.getSupplierById(id);
-  //           if (response.success) {
-  //             names[id] = response.data?.supplier.ten || "";
-  //           }
-  //         } catch (error) {
-  //           console.error(`Error fetching supplier name for ID ${id}:`, error);
-  //         }
-  //       })
-  //     );
-
-  //     setSupplierNames((prev) => ({ ...prev, ...names }));
-  //   };
-
-  //   fetchSupplierNames();
-  // }, [grns, supplierService, supplierNames]);
+  }, [invoiceService, search, pageNum]);
 
   return (
     <>
-      <div className="flex flex-row-reverse mb-5 py-5">
-        {/* <Button
-          className="bg-green-500 hover:bg-white hover:text-green-500 border-2 border-green-500"
-          asChild
-        >
-          <Link href={`/grn/add-grn`}>Add</Link>
-        </Button> */}
-      </div>
+      <div className="flex flex-row-reverse mb-5 py-5"></div>
 
       <Table>
         <TableCaption>A list of your recent good receive notes</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>ID</TableHead>
+            <TableHead>Customer ID</TableHead>
             <TableHead>Customer</TableHead>
             <TableHead>Shipment Type</TableHead>
             <TableHead>Address</TableHead>
@@ -139,34 +174,35 @@ const GoodReceiveNotes = () => {
             <TableRow key={index}>
               <TableCell>{invoice._id}</TableCell>
               <TableCell>{invoice.khachHangId}</TableCell>
+              <TableCell>{invoice.tenKH}</TableCell>
               <TableCell>{invoice.ptVanChuyen}</TableCell>
               <TableCell>{invoice.diaChiDatHang}</TableCell>
               <TableCell>
                 {invoice.trangThaiDon === "Chờ xác nhận" ? (
-                  <>
-                    <p className="bg-blue-200 text-blue-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                      Processing <TbReload />
-                    </p>
-                  </>
+                  <p className="bg-blue-200 text-blue-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Processing <TbReload />
+                  </p>
                 ) : invoice.trangThaiDon === "Hoàn thành" ? (
-                  <>
-                    <p className="bg-green-200 text-green-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                      Completed <TbCheck />
-                    </p>
-                  </>
+                  <p className="bg-green-200 text-green-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Completed <TbCheck />
+                  </p>
+                ) : invoice.trangThaiDon === "Đã hủy" ? (
+                  <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Canceled <TbLockCancel />
+                  </p>
                 ) : (
-                  <>
-                    <p className="bg-red-200 text-red-700 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
-                      Canceled <TbLockCancel />
-                    </p>
-                  </>
+                  <p className="bg-green-200 text-green-400 font-semibold rounded-l-xl rounded-r-xl p-1 flex items-center justify-center gap-1">
+                    Accepted <TbCheck />
+                  </p>
                 )}
               </TableCell>
               <TableCell>
                 {" "}
                 {new Date(invoice.createdAt).toLocaleString()}{" "}
               </TableCell>
-              <TableCell className="text-end">{invoice.tongTien}.00</TableCell>
+              <TableCell className="text-end">
+                {invoice.tongTien.toLocaleString()}đ
+              </TableCell>
               <TableCell className="text-end">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -183,22 +219,35 @@ const GoodReceiveNotes = () => {
                       >
                         View
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          await invoiceService.confirm(invoice._id);
-                          window.location.reload();
-                        }}
-                      >
-                        Accept
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={async () => {
-                          await invoiceService.cancel(invoice._id);
-                          window.location.reload();
-                        }}
-                      >
-                        Cancel
-                      </DropdownMenuItem>
+                      {invoice.trangThaiDon === "Chờ xác nhận" ? (
+                        <>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              await handleConfirmInvoice(invoice._id);
+                            }}
+                          >
+                            Accept
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              await handleCancelInvoice(invoice._id);
+                            }}
+                          >
+                            Cancel
+                          </DropdownMenuItem>
+                        </>
+                      ) : (
+                        <></>
+                      )}
+                      {invoice.trangThaiDon === "Đã xác nhận" && (
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            await handleConpleteInvoice(invoice._id);
+                          }}
+                        >
+                          Complete
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -211,11 +260,10 @@ const GoodReceiveNotes = () => {
       <div className="bottom-1 flex justify-center items-center">
         <Pagination>
           <PaginationContent>
+            {/* Nút Previous */}
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => {
-                  setPageNum((num) => num - 1);
-                }}
+                onClick={() => setPageNum((num) => num - 1)}
                 tabIndex={pageNum <= 1 ? -1 : undefined}
                 aria-disabled={pageNum === 1}
                 className={
@@ -223,21 +271,46 @@ const GoodReceiveNotes = () => {
                 }
               />
             </PaginationItem>
-            {Array.from({ length: totalPage }, (_, index) => index + 1).map(
-              (page) => (
-                <PaginationItem
-                  key={page}
-                  className={page === pageNum ? `bg-yellow` : ``}
-                >
-                  <PaginationLink onClick={() => setPageNum(page)}>
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            )}
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
+
+            {/* Hiển thị các trang */}
+            {Array.from({ length: totalPage }, (_, index) => index + 1)
+              .filter((page) => {
+                // Hiển thị trang đầu tiên, trang cuối cùng và 3 trang gần nhất xung quanh trang hiện tại
+                return (
+                  page === 1 ||
+                  page === totalPage ||
+                  (page >= pageNum - 1 && page <= pageNum + 1)
+                );
+              })
+              .map((page, idx, visiblePages) => (
+                <React.Fragment key={page}>
+                  {/* Hiển thị dấu 3 chấm nếu có khoảng cách giữa các trang */}
+                  {idx > 0 && page > visiblePages[idx - 1] + 1 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Hiển thị trang */}
+                  <PaginationItem
+                    style={
+                      page === pageNum
+                        ? {
+                            backgroundColor: "orange",
+                            borderRadius: "5px",
+                            border: "none",
+                          }
+                        : {}
+                    }
+                  >
+                    <PaginationLink onClick={() => setPageNum(page)}>
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                </React.Fragment>
+              ))}
+
+            {/* Nút Next */}
             <PaginationItem>
               <PaginationNext
                 tabIndex={pageNum >= totalPage ? -1 : undefined}
@@ -247,9 +320,7 @@ const GoodReceiveNotes = () => {
                     ? "pointer-events-none opacity-50"
                     : undefined
                 }
-                onClick={() => {
-                  setPageNum((num) => num + 1);
-                }}
+                onClick={() => setPageNum((num) => num + 1)}
               />
             </PaginationItem>
           </PaginationContent>

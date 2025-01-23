@@ -8,14 +8,14 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
-import { grnFormSchema } from "@/utils/schema";
+import { updateGrnFormSchema } from "@/utils/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import { GoodReceiveNotesService } from "@/services/grn.service";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Select,
   SelectItem,
@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/table";
 import { ProductService } from "@/services/product.service";
 
-const AddGrn = () => {
+const EditGrn = () => {
   const router = useRouter();
 
   const grnService = useMemo(() => GoodReceiveNotesService.getInstance(), []);
@@ -51,17 +51,93 @@ const AddGrn = () => {
     []
   );
 
-  const form = useForm<z.infer<typeof grnFormSchema>>({
-    resolver: zodResolver(grnFormSchema),
+  const [grnDetail, setGrnDetail] = useState<{
+    purchaseInvoice: {
+      _id: string;
+      nhanVienId: string;
+      trangThaiDon: string;
+      ghiChu: string;
+      tongTien: number;
+      createdAt: string;
+      supplierId: string;
+      ten: string;
+    };
+    detailPurchaseInvoices: Array<{
+      _id: string;
+      soLuong: number;
+      thanhTien: number;
+      sanPhamId: string;
+      tenSP: string;
+      giaNhap: number;
+      imageUrl: string;
+    }>;
+  }>();
+
+  const params = useParams();
+  const grnId = params.grnId as string;
+
+  const form = useForm<z.infer<typeof updateGrnFormSchema>>({
+    resolver: zodResolver(updateGrnFormSchema),
     defaultValues: {
-      purchaseInvoice: {
-        supplierId: "",
-        ghiChu: "",
-        tongTien: 0,
-      },
-      detailPurchaseInvoices: [],
+      supplierId: grnDetail?.purchaseInvoice.supplierId || "",
+      ghiChu: grnDetail?.purchaseInvoice.ghiChu || "",
+      tongTien: grnDetail?.purchaseInvoice.tongTien || 0,
+      detailPurchaseInvoices: grnDetail?.detailPurchaseInvoices || [],
     },
   });
+
+  useEffect(() => {
+    if (grnDetail) {
+      form.reset({
+        supplierId: grnDetail.purchaseInvoice.supplierId || "",
+        ghiChu: grnDetail.purchaseInvoice.ghiChu || "",
+        tongTien: grnDetail.purchaseInvoice.tongTien || 0,
+        detailPurchaseInvoices: grnDetail.detailPurchaseInvoices.map(
+          (detail) => ({
+            productId: detail.sanPhamId || "",
+            giaNhap: detail.giaNhap || 0,
+            soLuong: detail.soLuong || 0,
+            thanhTien: detail.thanhTien || 0,
+          })
+        ),
+      });
+    }
+  }, [grnDetail, form]);
+
+  useEffect(() => {
+    const fetchGrnDetail = async (id: string) => {
+      try {
+        const response = await grnService.getGrnDetails(id);
+        if (response.success && response.data) {
+          setGrnDetail({
+            purchaseInvoice: response.data?.purchaseInvoice,
+            detailPurchaseInvoices: response.data?.detailPurchaseInvoices,
+          });
+          form.reset({
+            supplierId: response.data?.purchaseInvoice.supplierId || "",
+            ghiChu: response.data?.purchaseInvoice.ghiChu || "",
+            tongTien: response.data?.purchaseInvoice.tongTien || 0,
+            detailPurchaseInvoices: response.data?.detailPurchaseInvoices.map(
+              (detail) => ({
+                productId: detail.sanPhamId || "",
+                giaNhap: detail.giaNhap || 0,
+                soLuong: detail.soLuong || 0,
+                thanhTien: detail.thanhTien || 0,
+              })
+            ),
+          });
+        } else {
+          console.log(response.error);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (grnId) {
+      fetchGrnDetail(grnId);
+    }
+  }, [grnService, grnId, setGrnDetail, form]);
 
   useEffect(() => {
     const fetchProductsList = async () => {
@@ -104,15 +180,18 @@ const AddGrn = () => {
       (sum, detail) => sum + (detail.thanhTien || 0),
       0
     );
-    form.setValue("purchaseInvoice.tongTien", total);
+    form.setValue("tongTien", total);
   }, [details, form]);
 
-  const onSubmit = async (values: z.infer<typeof grnFormSchema>) => {
+  const onSubmit = async (
+    id: string,
+    values: z.infer<typeof updateGrnFormSchema>
+  ) => {
     console.log(values);
     try {
-      const response = await grnService.create(values);
+      const response = await grnService.update(id, values);
       if (response.success && response.data) {
-        toast.success("Tạo hóa đơn nhập kho thành công");
+        toast.success("Sửa hóa đơn nhập kho thành công");
         router.push("/grn");
       } else {
         console.log(response.error);
@@ -123,6 +202,9 @@ const AddGrn = () => {
     }
   };
 
+  const handleSubmitWithId = (values: z.infer<typeof updateGrnFormSchema>) =>
+    onSubmit(grnId, values);
+
   return (
     <>
       <div className="flex flex-row mb-5">
@@ -130,11 +212,11 @@ const AddGrn = () => {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(handleSubmitWithId)}>
           {/* Supplier Selection */}
           <FormField
             control={form.control}
-            name="purchaseInvoice.supplierId"
+            name="supplierId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Supplier</FormLabel>
@@ -162,7 +244,7 @@ const AddGrn = () => {
           {/* Notes */}
           <FormField
             control={form.control}
-            name="purchaseInvoice.ghiChu"
+            name="ghiChu"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Notes</FormLabel>
@@ -333,9 +415,7 @@ const AddGrn = () => {
                     </div>
                     <div className="flex justify-between font-bold text-gray-500">
                       <div>Total:</div>
-                      <div>
-                        {form.watch("purchaseInvoice.tongTien").toFixed(2)}
-                      </div>
+                      <div>{form.watch("tongTien").toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
@@ -358,4 +438,4 @@ const AddGrn = () => {
   );
 };
 
-export default AddGrn;
+export default EditGrn;
