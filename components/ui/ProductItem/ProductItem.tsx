@@ -20,9 +20,7 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
   return (
     <>
       <TableRow className={isOpen ? "border-2 border-gray-500" : ""}>
-        <TableCell>
-          <Checkbox />
-        </TableCell>
+        <TableCell>{/* <Checkbox /> */}</TableCell>
         <TableCell>
           {product.imageUrl ? (
             <Image
@@ -40,7 +38,7 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
         </TableCell>
         <TableCell>{product._id}</TableCell>
         <TableCell>{product.tenSP}</TableCell>
-        <TableCell>{product.giaBan}</TableCell>
+        <TableCell>{product.giaBan.toLocaleString()}</TableCell>
         {/* <TableCell>{product.giaNhap}</TableCell> */}
         <TableCell>{product.soLuong}</TableCell>
         <TableCell className="flex justify-end items-center">
@@ -78,7 +76,7 @@ const ProductItem = ({ product }: { product: ProductDTO }) => {
                 />
                 <Label className="text-gray-500">Sell Price</Label>
                 <input
-                  value={product.giaBan}
+                  value={product.giaBan.toLocaleString() + "Đ"}
                   className="text-lg bg-transparent border-b-2 border-t-0 border-x-0 rounded-none focus:outline-none"
                   disabled
                 />

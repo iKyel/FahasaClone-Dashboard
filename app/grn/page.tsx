@@ -126,7 +126,7 @@ const GoodReceiveNotes = () => {
                 )}
               </TableCell>
               <TableCell className="text-end">
-                {grn.tongTien.toLocaleString()}
+                {grn.tongTien.toLocaleString()}Đ
               </TableCell>
               <TableCell className="text-end">
                 <DropdownMenu>
@@ -157,7 +157,6 @@ const GoodReceiveNotes = () => {
                           <DropdownMenuItem
                             onClick={async () => {
                               await grnService.confirm(grn._id);
-                              window.location.reload();
                             }}
                           >
                             Accept
@@ -165,7 +164,6 @@ const GoodReceiveNotes = () => {
                           <DropdownMenuItem
                             onClick={async () => {
                               await grnService.cancel(grn._id);
-                              window.location.reload();
                             }}
                           >
                             Cancel

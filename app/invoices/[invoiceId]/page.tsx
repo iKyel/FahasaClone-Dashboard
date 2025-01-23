@@ -153,7 +153,7 @@ const InvoiceDetails = () => {
               <p>{invoiceDetail.saleInvoice.khachHangId}</p>
               <p>{invoiceDetail.saleInvoice.diaChiDatHang}</p>
               <p className="text-blue-600">
-                <strong className="text-gray-500">Phone:</strong> {`0123456789`}
+                <strong className="text-gray-500">Phone:</strong> {`09647364641`}
               </p>
             </div>
             <div className="w-1/3 flex flex-col gap-2">

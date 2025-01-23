@@ -2,6 +2,7 @@ import { API_ROUTES } from "@/types/api.route";
 import { ApiResponse } from "@/types/api.type";
 import { UserDTO } from "@/types/user.type";
 import ApiUtils from "@/utils/apiUtils";
+import nookies from "nookies";
 
 export class UserService {
   private apiUtils: ApiUtils = new ApiUtils();
@@ -30,9 +31,15 @@ export class UserService {
     userName: string;
     password: string;
     loaiTK: string;
-  }): Promise<ApiResponse<{ message: string; user: UserDTO }>> {
-    const response: ApiResponse<{ message: string; user: UserDTO }> =
-      await this.apiUtils.post(`${API_ROUTES.user}/login`, values);
+  }): Promise<ApiResponse<{ message: string; user: UserDTO; token: string }>> {
+    const response: any = await this.apiUtils.post(
+      `${API_ROUTES.user}/login`,
+      values
+    );
+    if (response && response.data && response.data.token) {
+      console.log(response.data);
+      nookies.set(null, "token", response.data.token, { path: "/" });
+    }
     return response;
   }
 
@@ -116,7 +123,8 @@ export class UserService {
     return await this.apiUtils.put(`${API_ROUTES.user}/changePassword`, values);
   }
 
-  public async logout(): Promise<ApiResponse<{ message: string }>> {
-    return await this.apiUtils.get(`${API_ROUTES.user}/logout`);
+  public async logout() {
+    nookies.destroy(null, "token", { path: "/" });
+    return { message: "Đăng xuất thành công" };
   }
 }

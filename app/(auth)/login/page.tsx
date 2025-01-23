@@ -49,7 +49,7 @@ export default function Login() {
       console.log(response);
       if (response.success && response.data) {
         toast.success(response.data.message, {
-          onClose: () => router.push("/"), // Chỉ redirect sau khi toast đóng
+          onClose: () => router.push("/edit-profile"), // Chỉ redirect sau khi toast đóng
         });
       } else {
         toast.error(

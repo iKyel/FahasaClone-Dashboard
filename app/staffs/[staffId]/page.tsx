@@ -68,7 +68,19 @@ const EditStaff = () => {
   }, [staff, form]);
 
   const onSubmit = async (values: z.infer<typeof updateFormSchema>) => {
-    alert(values.hoDem + " - " + values.ten + " - " + values.email + " - " + values.gioiTinh + " - " + values.ngaySinh + " - " + values.sdt);
+    alert(
+      values.hoDem +
+        " - " +
+        values.ten +
+        " - " +
+        values.email +
+        " - " +
+        values.gioiTinh +
+        " - " +
+        values.ngaySinh +
+        " - " +
+        values.sdt
+    );
     try {
       const response = await userService.updateProfile(values);
       console.log(response);
@@ -88,7 +100,7 @@ const EditStaff = () => {
 
   return (
     <>
-      <h2 className="text-orange-500 text-2xl mb-5">Update Staff</h2>
+      {/* <h2 className="text-orange-500 text-2xl mb-5">Update Staff</h2> */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -98,7 +110,7 @@ const EditStaff = () => {
               <FormItem>
                 <FormLabel>First Name</FormLabel>
                 <FormControl>
-                  <Input {...field} />
+                  <Input {...field} readOnly />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -111,7 +123,11 @@ const EditStaff = () => {
               <FormItem>
                 <FormLabel>Last Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your last name" {...field} />
+                  <Input
+                    placeholder="Enter your last name"
+                    {...field}
+                    readOnly
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -128,6 +144,7 @@ const EditStaff = () => {
                     type="email"
                     placeholder="Enter your email"
                     {...field}
+                    readOnly
                   />
                 </FormControl>
                 <FormMessage />
@@ -142,6 +159,7 @@ const EditStaff = () => {
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
                   <Select
+                    disabled
                     value={field.value || ""} // Đảm bảo rằng value của Select luôn được cập nhật
                     onValueChange={(value) => field.onChange(value)} // Sử dụng onValueChange để cập nhật giá trị
                   >
@@ -196,6 +214,7 @@ const EditStaff = () => {
                             field.onChange(date?.toISOString())
                           } // Lưu ISO string
                           numberOfMonths={1}
+                          disabled
                         />
                       </PopoverContent>
                     </Popover>
@@ -217,18 +236,19 @@ const EditStaff = () => {
                     type="phone"
                     placeholder="Enter your phone number"
                     {...field}
+                    readOnly
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button
+          {/* <Button
             asChild
             className="bg-green-500 text-white hover:bg-white hover:text-green-500 border-2 border-green-500"
           >
             <button type="submit">Submit</button>
-          </Button>
+          </Button> */}
         </form>
       </Form>
     </>

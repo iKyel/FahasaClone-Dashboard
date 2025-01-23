@@ -334,7 +334,7 @@ const AddGrn = () => {
                     <div className="flex justify-between font-bold text-gray-500">
                       <div>Total:</div>
                       <div>
-                        {form.watch("purchaseInvoice.tongTien").toFixed(2)}
+                        {form.watch("purchaseInvoice.tongTien").toLocaleString()}Đ
                       </div>
                     </div>
                   </div>

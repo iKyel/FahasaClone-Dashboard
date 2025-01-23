@@ -96,15 +96,6 @@ const ProductDetail = () => {
   const { data: categories = [] } = useCategories(categoryService);
   const { data: featuresSelect = [] } = useFeatures(featureService);
 
-  // const [features, setFeatures] = useState<
-  //   Array<{
-  //     _id: string;
-  //     dacTrungId: string;
-  //     ten: string;
-  //     giaTri: string;
-  //   }>
-  // >([]);
-
   const params = useParams();
   const productId = params.productId as string;
 
@@ -397,7 +388,7 @@ const ProductDetail = () => {
                 name="khuyenMai"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sale</FormLabel>
+                    <FormLabel>Discount</FormLabel>
                     <Input
                       type="number"
                       placeholder="Enter quantity"
